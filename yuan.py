@@ -1,14 +1,46 @@
 import os
 import sys
+import warnings
+
+from logging import Logging
 
 class Yuan:
     def __init__(self):
-        self._BASE_PATH = os.getcwd()
-        self._PATH = None
+        self._logname = ''
+        self._logger = None
+        self._console_print = True
 
-    def set_path(self, path=''):
-        pass
+    def console_off(self):
+        self._console_print = False
 
-    def get_path(self):
-        return self._PATH
+    def console_on(self):
+        self._console_print = True
+
+    def log_on(self, path):
+        self._logname = path
+        self._logger = Logging(path)
+
+    def log_off(self):
+        self._logname = ''
+        self._logger = None
+
+    def print_both(self, *args, **kwargs):
+        self.log_info(*args)
+        self.print(*args, **kwargs)
+
+    def log_info(self, *args, **kwargs):
+        if self._logger:
+            self._logger.info(*args, **kwargs)
+
+    def log_warning(self, *args, **kwargs):
+        if self._logger:
+            self._logger.warning(*args, **kwargs)
+
+    def print(self, *args, **kwargs):
+        if self._console_print:
+            print(*args, **kwargs)
+
+    def warning(self, *args, **kwargs):
+        if self._console_print:
+            warnings.warn(*args, **kwargs)
     
