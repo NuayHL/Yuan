@@ -24,9 +24,13 @@ class Yuan:
         self._logname = ''
         self._logger = None
 
-    def print_both(self, *args, **kwargs):
+    def print(self, *args, **kwargs):
         self.log_info(*args)
-        self.print(*args, **kwargs)
+        self.console_print(*args, **kwargs)
+
+    def warning(self, *args):
+        self.log_warning(*args)
+        self.warning(*args)
 
     def log_info(self, *args, **kwargs):
         if self._logger:
@@ -36,11 +40,11 @@ class Yuan:
         if self._logger:
             self._logger.warning(*args, **kwargs)
 
-    def print(self, *args, **kwargs):
+    def console_print(self, *args, **kwargs):
         if self._console_print:
             print(*args, **kwargs)
 
-    def warning(self, *args, **kwargs):
+    def console_warning(self, *args, **kwargs):
         if self._console_print:
             warnings.warn(*args, **kwargs)
     

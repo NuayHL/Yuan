@@ -2,18 +2,21 @@ import os
 import warnings
 from collections import defaultdict
 from yuan import Yuan
+from filesys.filetypes import _FileClassify
+from filesys.tools import *
 
 class FileManager(Yuan):
     def __init__(self, path):
         super(FileManager, self).__init__()
-        self._path = self.abspath(path)
-        self._name = self.getbase(path)
+        self._path = abspath(path)
+        self._name = getori(path)
 
         self._all_files = list()
         self._in_path_files = dict()
         self._in_path_dirs = dict()
-        self._ext_list = defaultdict(list)
         self.update()
+
+        self.filecls = _FileClassify(*self._in_path_files.keys())
         self.cache = defaultdict(lambda x: False)
     
     def log_on(self, log_name=None, logger=None):
@@ -51,6 +54,7 @@ class FileManager(Yuan):
         if os.path.exists(abs_file_path):
             if os.path.isfile(abs_file_path):
                 self._in_path_files[filename] = abs_file_path
+                self.filecls.update_files(filename)
             elif os.path.isdir(abs_file_path):
                 self._in_path_dirs[filename] = FileManager(abs_file_path)
             else:
@@ -82,7 +86,6 @@ class FileManager(Yuan):
         else:
             return False
 
-
     def get_path(self, filename):
         return self.search_files(filename=filename)
 
@@ -108,21 +111,6 @@ class FileManager(Yuan):
     def check(self, name):
         return os.path.exists(self.join(name))
 
-    @staticmethod
-    def getext(name):
-        return os.path.splitext(name)[1]
-
-    @staticmethod
-    def getbase(name):
-        return os.path.basename(name)
-
-    @staticmethod
-    def getori(name):
-        return os.path.splitext(os.path.basename(name))[0]
-
-    @staticmethod
-    def abspath(name):
-        return os.path.abspath(name)
 
     def __str__(self):
         return self._path
@@ -130,4 +118,6 @@ class FileManager(Yuan):
     def __eq__(self, other):
         assert isinstance(other, FileManager)
         return self._path == other.get_path()
+
+
 
