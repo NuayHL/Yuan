@@ -9,5 +9,5 @@ def getbase(name):
 def getori(name):
     return os.path.splitext(os.path.basename(name))[0]
 
-def abspath(name):
+def getabspath(name):
     return os.path.abspath(name)

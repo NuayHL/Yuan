@@ -35,6 +35,7 @@ class Yuan:
         else:
             assert self._logger, 'Please complete the log file infor: path or logger instance'
             self._using_log = True
+            self.warning('Turn on log')
 
     def log_off(self):
         self._using_log = False
