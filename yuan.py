@@ -2,13 +2,23 @@ import os
 import sys
 import warnings
 
-from logging import Logging
+from baselog import BaseLog
 
 class Yuan:
+    """
+    A fundamental recorder for any action
+    """
     def __init__(self):
-        self._logname = ''
+        self._using_log = False
         self._logger = None
         self._console_print = True
+
+    def silent(self):
+        self.console_off()
+        if self._using_log:
+            self.log_temp_off()
+        else:
+            self.log_off()
 
     def console_off(self):
         self._console_print = False
@@ -16,28 +26,39 @@ class Yuan:
     def console_on(self):
         self._console_print = True
 
-    def log_on(self, path):
-        self._logname = path
-        self._logger = Logging(path)
+    def log_on(self, path='', logger: BaseLog = None):
+        self._using_log = True
+        if logger:
+            self._logger = logger
+        elif path:
+            self._logger = BaseLog(path)
+        else:
+            assert self._logger, 'Please complete the log file infor: path or logger instance'
+            self._using_log = True
 
     def log_off(self):
-        self._logname = ''
+        self._using_log = False
         self._logger = None
+
+    def log_temp_off(self):
+        assert self._logger, 'You need to set the log before temporarily set it off'
+        self.log_warning('Temporarily turn off log')
+        self._using_log = False
 
     def print(self, *args, **kwargs):
         self.log_info(*args)
         self.console_print(*args, **kwargs)
 
-    def warning(self, *args):
+    def warning(self, *args, **kwargs):
         self.log_warning(*args)
-        self.warning(*args)
+        self.console_warning(*args, **kwargs)
 
     def log_info(self, *args, **kwargs):
-        if self._logger:
+        if self._using_log:
             self._logger.info(*args, **kwargs)
 
     def log_warning(self, *args, **kwargs):
-        if self._logger:
+        if self._using_log:
             self._logger.warning(*args, **kwargs)
 
     def console_print(self, *args, **kwargs):

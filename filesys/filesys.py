@@ -1,11 +1,10 @@
 import os
 import warnings
 from collections import defaultdict
-from yuan import Yuan
 from filesys.filetypes import _FileClassify
 from filesys.tools import *
 
-class FileManager(Yuan):
+class FileManager:
     def __init__(self, path):
         super(FileManager, self).__init__()
         self._path = abspath(path)
@@ -16,16 +15,8 @@ class FileManager(Yuan):
         self._in_path_dirs = dict()
         self.update()
 
-        self.filecls = _FileClassify(*self._in_path_files.keys())
+        self.file_cls_sys = _FileClassify(*self._in_path_files.keys())
         self.cache = defaultdict(lambda x: False)
-    
-    def log_on(self, log_name=None, logger=None):
-        if logger:
-            super(FileManager, self)._logger = logger
-        else:
-            if not log_name:
-                log_name = 'file_record'
-            super(FileManager, self).log_on(os.path.join(self._path, log_name))
 
     def update(self):
         files = os.listdir(self._path)
@@ -54,16 +45,15 @@ class FileManager(Yuan):
         if os.path.exists(abs_file_path):
             if os.path.isfile(abs_file_path):
                 self._in_path_files[filename] = abs_file_path
-                self.filecls.update_files(filename)
             elif os.path.isdir(abs_file_path):
                 self._in_path_dirs[filename] = FileManager(abs_file_path)
             else:
-                self.warning('Strange Files %s' % abs_file_path)
+                warnings.warn('File type not recognized \"%s\"' % abs_file_path)
         else:
             if filename in self._all_files:
                 self.del_file(filename)
             else:
-                self.warning('Can not directly find \"%s\" in \"%s\"' % (filename, self._path))
+                warnings.warn('Can not directly find \"%s\" in \"%s\"' % (filename, self._path))
 
     def search_files(self, filename, find_all=False, indirs:int = 100):
         file_list = []
