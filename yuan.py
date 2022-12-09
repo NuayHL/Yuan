@@ -26,12 +26,12 @@ class Yuan:
     def console_on(self):
         self._console_print = True
 
-    def log_on(self, path='', logger: BaseLog = None):
+    def log_on(self, log_name='', logger: BaseLog = None):
         self._using_log = True
         if logger:
             self._logger = logger
-        elif path:
-            self._logger = BaseLog(path)
+        elif log_name:
+            self._logger = BaseLog(log_name)
         else:
             assert self._logger, 'Please complete the log file infor: path or logger instance'
             self._using_log = True
@@ -68,4 +68,4 @@ class Yuan:
     def console_warning(self, *args, **kwargs):
         if self._console_print:
             warnings.warn(*args, **kwargs)
-    
+
