@@ -31,6 +31,14 @@ class FileManager:
         pass
 
     def save(self, file_name, **kwargs):
+        pass
+
+    def load(self, file_name, type_name='', **kwargs):
+        file_types = self.file_cls_sys.get_type_of_file(file_name)
+        if type_name:
+            assert type_name in file_types, 'File \"%s\" is not assgined with type \"%s\".' % (file_name, type_name)
+
+
 
     def update(self):
         files = os.listdir(self._path)
@@ -149,12 +157,12 @@ class _FileClassify:
     def get_type_of_file(self, file_char):
         return self.files_with_type[file_char]
 
-    def get_file_in_type(self, type_name):
-        fin_file = list()
+    def get_files_in_type(self, type_name):
+        fin_files = list()
         for file_name, file_types in self.files_with_type.items():
             if type_name in file_types:
-                fin_file.append(file_name)
-        return fin_file
+                fin_files.append(file_name)
+        return fin_files
 
 class File_Type(abc.ABC):
     def __init__(self):
