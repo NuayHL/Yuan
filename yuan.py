@@ -2,7 +2,10 @@ import os
 import sys
 import warnings
 
-from baselog import BaseLog
+from baselog import BasicLog
+
+# define the log class
+MYLOG = BasicLog
 
 class Yuan:
     """
@@ -26,12 +29,12 @@ class Yuan:
     def console_on(self):
         self._console_print = True
 
-    def log_on(self, log_name='', logger: BaseLog = None):
+    def log_on(self, log_name='', logger: MYLOG = None):
         self._using_log = True
         if logger:
             self._logger = logger
         elif log_name:
-            self._logger = BaseLog(log_name)
+            self._logger = MYLOG(log_name)
         else:
             assert self._logger, 'Please complete the log file infor: path or logger instance'
             self._using_log = True
@@ -39,6 +42,8 @@ class Yuan:
 
     def log_off(self):
         self._using_log = False
+        if self._logger is not None:
+            self.log_warning('--LOG END--')
         self._logger = None
 
     def log_temp_off(self):

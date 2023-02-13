@@ -1,11 +1,24 @@
+from abc import ABC, abstractmethod
 import os
 import datetime
 import logging
 import sys
 
-
-class BaseLog:
+class BaseLog(ABC):
     def __init__(self, log_name):
+        pass
+
+    @abstractmethod
+    def info(self, *args, **kwargs):
+        raise NotImplementedError
+
+    @abstractmethod
+    def warn(self, *args, **kwargs):
+        raise NotImplementedError
+
+class BasicLog(BaseLog):
+    def __init__(self, log_name):
+        super(BasicLog, self).__init__(log_name)
         self.name = log_name
         self.logger = logging.getLogger(log_name)
         self.logger.propagete = False

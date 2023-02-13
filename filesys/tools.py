@@ -11,3 +11,9 @@ def getori(name):
 
 def getabspath(name):
     return os.path.abspath(name)
+
+def getfulldir(name):
+    return os.path.dirname(name)
+
+def getparentdir(name):
+    return os.path.basename(os.path.dirname(name))
