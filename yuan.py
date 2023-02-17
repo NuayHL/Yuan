@@ -75,3 +75,7 @@ class Yuan:
         if self._console_print:
             warnings.warn(*args, **kwargs)
 
+    def debug2txt(self, *args, debug_file_name='debug.txt'):
+        with open(debug_file_name, 'a') as f:
+            print(*args, file=f)
+

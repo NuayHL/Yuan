@@ -4,9 +4,13 @@ sys.path.append(os.path.dirname(__file__))
 
 from registry import Registry
 from filesys import FileManager
-from progressbar import ProgressBar
+from progressbar import IterProgressBar, ManualProgressBar, light_progressbar
+from timer import Timer
 
 __all__ = ['Registry',
+           'Timer',
            'FileManager',
-           'ProgressBar'
+           'IterProgressBar',
+           'ManualProgressBar',
+           'light_progressbar'
            ]
