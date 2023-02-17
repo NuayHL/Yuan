@@ -15,30 +15,30 @@ class FileManager:
         self._path = getabspath(path)
         self._name = getori(path)
 
-        self._all_files = list()
-        self._in_path_files = dict()
-        self._in_path_dirs = dict()
+        self._all_files = set()
         self.update()
 
-        self.file_cls_sys = _FileClassify(*self._in_path_files.keys())
+        self.file_cls_sys = _FileClassify(*list(self._all_files))
         self.cache = defaultdict(lambda x: False)
 
     def remove(self, file_name):
-        os.remove(self.join(file_name))
+        os.remove(self._join(file_name))
         self.update_file(file_name)
 
     def duplicate(self, file_name):
         pass
 
-    def save(self, file_name, **kwargs):
-        pass
+    def getpath(self, file_name):
+        return self._join(file_name)
 
-    def load(self, file_name, type_name='', **kwargs):
-        file_types = self.file_cls_sys.get_type_of_file(file_name)
-        if type_name:
-            assert type_name in file_types, 'File \"%s\" is not assgined with type \"%s\".' % (file_name, type_name)
+    def check(self, full_file_name):
+        return self._check(full_file_name)
 
+    def _check(self, full_file_name):
+        return os.path.exists(self._join(full_file_name))
 
+    def _join(self, name):
+        return os.path.join(self._path, name)
 
     def update(self):
         files = os.listdir(self._path)
@@ -51,19 +51,19 @@ class FileManager:
         for file in files:
             if file not in self._all_files and self.isfile(file):
                 self._all_files.append(file)
-                self._in_path_files[file] = self.join(file)
+                self._in_path_files[file] = self._join(file)
 
     def update_only_dirs(self):
         files = os.listdir(self._path)
         for file in files:
             if file not in self._all_files and self.isdir(file):
                 self._all_files.append(file)
-                self._in_path_dirs[file] = self.join(file)
+                self._in_path_dirs[file] = self._join(file)
 
     def update_file(self, filename):
         if filename.startswith(('.', '__')):
             return
-        abs_file_path = self.join(filename)
+        abs_file_path = self._join(filename)
         if os.path.exists(abs_file_path):
             if os.path.isfile(abs_file_path):
                 self._in_path_files[filename] = abs_file_path
@@ -82,7 +82,7 @@ class FileManager:
         file_list = []
         find_flag = False
         if filename in self._all_files:
-            file_list.append(self.join(filename))
+            file_list.append(self._join(filename))
             if not find_all:
                 return file_list[0]
             find_flag = True
@@ -99,14 +99,8 @@ class FileManager:
         else:
             return False
 
-    def get_path(self, filename):
-        return self.search_files(filename=filename)
-
     def path(self):
         return self._path
-
-    def join(self, name):
-        return os.path.join(self._path, name)
 
     def _del_file_record(self, name):
         self._all_files.remove(name)
@@ -117,14 +111,10 @@ class FileManager:
             del self._in_path_dirs[name]
 
     def isfile(self, name):
-        return os.path.isfile(self.join(name))
+        return os.path.isfile(self._join(name))
 
     def isdir(self, name):
-        return os.path.isfile(self.join(name))
-
-    def check(self, name):
-        return os.path.exists(self.join(name))
-
+        return os.path.isfile(self._join(name))
 
     def __str__(self):
         return self._path
@@ -179,3 +169,34 @@ class File_Type(abc.ABC):
     @abc.abstractmethod
     def is_type(self, **kwargs):
         pass
+
+class _File_Tree:
+    def __init__(self, base_name, parent_node):
+        self._name = base_name
+        self._all_child = set()
+        self._child_node = set()
+        self._parent = parent_node
+
+    def name(self):
+        return self._name
+
+    def
+
+    def child(self):
+        return self._all_child
+
+    def child_node(self):
+        return self._child_node
+
+    def __eq__(self, other):
+        if isinstance(other, str):
+            return self._name == other
+        elif isinstance(other, _File_Tree):
+            return self._name == other.name()
+        else:
+            raise NotImplementedError
+
+
+
+
+

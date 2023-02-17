@@ -29,16 +29,16 @@ class Yuan:
     def console_on(self):
         self._console_print = True
 
-    def log_on(self, log_name='', logger: MYLOG = None):
+    def log_on(self, log_file_path='', logger: MYLOG = None):
         self._using_log = True
         if logger:
             self._logger = logger
-        elif log_name:
-            self._logger = MYLOG(log_name)
+        elif log_file_path:
+            self._logger = MYLOG(log_file_path)
         else:
             assert self._logger, 'Please complete the log file infor: path or logger instance'
             self._using_log = True
-            self.warning('Turn on log')
+            self.warning('--LOG ON--')
 
     def log_off(self):
         self._using_log = False
