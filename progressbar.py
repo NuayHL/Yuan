@@ -17,7 +17,7 @@ class IterProgressBar:
         if self._count_eta:
             self._timer = Timer()
 
-        # Set Lenth---------------------------------------------------------------------------------------------------
+        # Set Lenth ----------------------------------------------------------------------------------------------------
         try:
             if isinstance(lenth, int):
                 self._max_iter = min(len(self._iter), lenth)
@@ -92,7 +92,7 @@ class IterProgressBar:
               end=' ' + self._end + ' ' + endstr)
 
 class ManualProgressBar:
-    def __init__(self, max_iter, barlenth=20, endstr=''):
+    def __init__(self, max_iter, barlenth=20, endstr='', instant_per_format='.1f', eta_on=False):
         self._count = 0
         self._max_iter = 0
         self._bar_len = barlenth
@@ -100,18 +100,47 @@ class ManualProgressBar:
         self._stop = False
         assert isinstance(max_iter, int) and max_iter > 0
         self._max_iter = max_iter
+        self._instant_per_format = instant_per_format
+
+        self._count_eta = eta_on
+        if self._count_eta:
+            self._timer = Timer()
 
     def update(self, write='', step: int = 1):
+        if self._count_eta:
+            if self._count == 0:
+                self._timer.start()
+                period_time = None
+            else:
+                period_time = self._timer.tick()
+        else:
+            period_time = None
+
         if self._stop:
-            pass
+            return
+
         self._count += step
+
         if self._count >= self._max_iter:
             write += '\n'
             self._stop = True
         percentage = float(self._count) / self._max_iter
+
+        if self._instant_per_format == 'num':
+            instant_per = '%d/%d' % (self._count, self._max_iter)
+        else:
+            formated_percentage = format(percentage * 100, self._instant_per_format)
+            instant_per = '%s' % formated_percentage + '%'
+
+        if period_time:
+            counts_eta = (self._max_iter - self._count) * period_time
+            counts_eta = 'ETA:' + Timer.period_convert(counts_eta)
+        else:
+            counts_eta = ''
+
         print('\r[' + '>' * int(percentage * self._bar_len) +
               '-' * (self._bar_len - int(percentage * self._bar_len)) + ']',
-              format(percentage * 100, '.1f') + '%',
+              instant_per, counts_eta,
               end=' ' + self._end + ' ' + write)
 
 def light_progressbar(percentage, endstr='', barlenth=20):
