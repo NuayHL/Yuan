@@ -1,6 +1,4 @@
-import abc
-import os
-import warnings
+import shutil
 from collections import defaultdict
 
 from filesys.tools import *
@@ -16,18 +14,45 @@ class FileManager:
         self.cache = defaultdict(lambda x: False)
 
     def remove(self, file_name):
-        assert self._free, 'Not allowed to remove files during iteration'
+        assert self._check_free(file_name), 'Not allowed to remove other files during iteration'
         os.remove(self._join(file_name))
 
-    def duplicate(self, file_name):
-        assert self._free, 'Not allowed to duplicate files during iteration'
-        pass
+    def copy(self, file_name, dst_name=None):
+        assert self.check(file_name), '\'%s\' does not exits' % file_name
+        assert self._check_free(file_name), 'Not allowed to duplicate other files during iteration'
+        if dst_name:
+            dst_name = self.check_repeat(dst_name)
+        else:
+            dst_name = self.check_repeat(file_name)
+        shutil.copy(self._join(file_name), self._join(dst_name))
+        return dst_name
+
+    def move(self, file_name, dst_name):
+        assert self.check(file_name), '\'%s\' does not exits' % file_name
+        assert self._check_free(file_name), 'Not allowed to move other files during iteration'
+        return shutil.move(self._join(file_name), self._join(dst_name))
+
+    def rename(self, file_name, dst_name):
+        assert self.check(file_name), '\'%s\' does not exits' % file_name
+        assert self._check_free(file_name), 'Not allowed to rename other files during iteration'
+        dst_name = self.check_repeat(dst_name)
+        os.rename(self._join(file_name), self._join(dst_name))
+        return dst_name
 
     def getpath(self, file_name):
         return self._join(file_name)
 
     def check(self, full_file_name):
         return self._check(full_file_name)
+
+    def check_repeat(self, file_name):
+        ori_name = getori(file_name)
+        ext = getext(file_name)
+        repeat_idx = 1
+        while file_name in self._all_files:
+            file_name = ori_name + '_%d' % repeat_idx + ext
+            repeat_idx += 1
+        return file_name
 
     def _check(self, full_file_name):
         return os.path.exists(self._join(full_file_name))
@@ -38,26 +63,30 @@ class FileManager:
     def update(self):
         self._all_files = os.listdir(self._path)
 
+    def _check_free(self, file_name):
+        return self._free or file_name == self._current_file
+
     def __iter__(self):
         self._num_files = len(self)
         self._counts = 0
         self._free = False
+        self._current_file = None
         return self
 
     def __next__(self):
-        current_counts = self._counts
+        self._current_file = self._all_files[self._counts]
         self._counts += 1
         if self._counts == self._num_files:
             self._free = True
             self._counts = 0
             raise StopIteration
-        return self._join(self._all_files[current_counts])
+        return self._join(self._current_file)
 
     def __len__(self):
         self.update()
         return len(self._all_files)
 
-    def path(self):
+    def basepath(self):
         return self._path
 
     def isfile(self, name):
@@ -71,7 +100,7 @@ class FileManager:
 
     def __eq__(self, other):
         assert isinstance(other, FileManager)
-        return self._path == other.path()
+        return self._path == other.basepath()
 
 
 
