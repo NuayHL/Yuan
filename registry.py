@@ -41,3 +41,11 @@ class Registry:
 
     def items(self):
         return self._dict.items()
+
+
+def load_modules(parent_module, init_file):
+    list_file = os.listdir(os.path.dirname(init_file))
+    list_file = [os.path.splitext(filename)[0] for filename in list_file if
+                 not filename.startswith(('_', '.', 'build'))]
+    for file in list_file:
+        __import__('%s.%s' %(parent_module, file))
