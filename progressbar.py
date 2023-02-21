@@ -80,9 +80,13 @@ class IterProgressBar:
             instant_per = '%s' % formated_percentage + '%'
 
         if self._count_eta:
-            time_in_iter = self._timer.tick()
-            counts_eta = (self._max_iter - self._count) * time_in_iter
-            counts_eta = 'ETA:' + Timer.period_convert(counts_eta)
+            self._timer.tick()
+            if self._stop:
+                counts_eta = 'Total Time: ' + Timer.period_convert(self._timer.total_time())
+            else:
+                time_in_iter = self._timer.average_time()
+                counts_eta = (self._max_iter - self._count) * time_in_iter
+                counts_eta = 'ETA:' + Timer.period_convert(counts_eta)
         else:
             counts_eta = ''
 
@@ -112,7 +116,8 @@ class ManualProgressBar:
                 self._timer.start()
                 period_time = None
             else:
-                period_time = self._timer.tick()
+                self._timer.tick()
+                period_time = self._timer.average_time()
         else:
             period_time = None
 
@@ -133,8 +138,11 @@ class ManualProgressBar:
             instant_per = '%s' % formated_percentage + '%'
 
         if period_time:
-            counts_eta = (self._max_iter - self._count) * period_time
-            counts_eta = 'ETA:' + Timer.period_convert(counts_eta)
+            if self._stop:
+                counts_eta = 'Total Time: ' + Timer.period_convert(self._timer.total_time())
+            else:
+                counts_eta = (self._max_iter - self._count) * period_time
+                counts_eta = 'ETA:' + Timer.period_convert(counts_eta)
         else:
             counts_eta = ''
 
@@ -142,6 +150,7 @@ class ManualProgressBar:
               '-' * (self._bar_len - int(percentage * self._bar_len)) + ']',
               instant_per, counts_eta,
               end=' ' + self._end + ' ' + write)
+
 
 def light_progressbar(percentage, endstr='', barlenth=20):
     if int(percentage)==1: endstr +='\n'
