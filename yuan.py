@@ -2,6 +2,7 @@ import os
 import sys
 import warnings
 
+from colorstr import ColorStr as Co
 from baselog import BasicLog
 
 # define the log class
@@ -51,16 +52,17 @@ class Yuan:
         self.log_warning('Temporarily turn off log')
         self._using_log = False
 
-    def print(self, *args, **kwargs):
+    def print(self, *args):
         self.log_info(*args)
-        self.console_print(*args, **kwargs)
+        self.console_print(*args)
 
-    def warning(self, *args, **kwargs):
+    def warning(self, *args):
         self.log_warning(*args)
-        self.console_warning(*args, **kwargs)
+        self.console_warning(*args)
 
     def log_info(self, *args, **kwargs):
         if self._using_log:
+            args = [Co.de_format(strings) for strings in args]
             self._logger.info(*args, **kwargs)
 
     def log_warning(self, *args, **kwargs):
@@ -78,4 +80,5 @@ class Yuan:
     def debug2txt(self, *args, debug_file_name='debug.txt'):
         with open(debug_file_name, 'a') as f:
             print(*args, file=f)
+
 

@@ -1,5 +1,13 @@
 class ColorStr:
     @staticmethod
+    def de_format(strings):
+        while '\033' in strings:
+            start_idx = strings.find('\033')
+            end_idx = strings[start_idx:].find('m') + 1 + start_idx
+            strings = strings[:start_idx] + strings[end_idx:]
+        return strings
+
+    @staticmethod
     def thick(strings):
         return f'\033[1m{strings}\033[0m'
 

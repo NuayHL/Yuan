@@ -4,6 +4,7 @@ import datetime
 import logging
 import sys
 
+
 class BaseLog(ABC):
     def __init__(self, log_name):
         pass
@@ -13,8 +14,9 @@ class BaseLog(ABC):
         raise NotImplementedError
 
     @abstractmethod
-    def warn(self, *args, **kwargs):
+    def warning(self, *args, **kwargs):
         raise NotImplementedError
+
 
 class BasicLog(BaseLog):
     def __init__(self, log_name):
@@ -29,6 +31,7 @@ class BasicLog(BaseLog):
     def set_log_file(self):
         self.log_file_path = self.name + '.log'
         fh = logging.FileHandler(self.log_file_path)
+
         def _utc8_aera(timestamp):
             now = datetime.datetime.utcfromtimestamp(timestamp) + datetime.timedelta(hours=8)
             return now.timetuple()
