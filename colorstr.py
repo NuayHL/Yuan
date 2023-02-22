@@ -1,4 +1,8 @@
-class ColorStr:
+# -*- coding: UTF-8 -*-
+import os
+os.environ["COLOR_OUTPUT"] = '1'
+
+class _ColorFormat:
     @staticmethod
     def de_format(strings):
         while '\033' in strings:
@@ -187,13 +191,29 @@ class ColorStr:
     def light_cyan_bg(strings):
         return f'\033[7;96m{strings}\033[0m'
 
-    @staticmethod
-    def test_sample(test_strings=None):
+class _ColorStr(_ColorFormat):
+    def __getattribute__(self, item):
+        if item in ['de_formate', 'test_sample']:
+            return super().__getattribute__(item)
+        return _ColorControl(super().__getattribute__(item))
+
+    def test_sample(self, test_strings=None):
         test_strings = '[TEST] This is a message: 1234567890 ,.[]{}()\"\';' if test_strings is None else test_strings
-        for func in ColorStr.__dict__:
+        for func in _ColorFormat.__dict__:
             if not func.startswith(('__', 'test_sample')):
-                print(getattr(ColorStr, func)(test_strings), end=': ')
+                print(getattr(self, func)(test_strings), end=': ')
                 print(func)
+
+def _ColorControl(func):
+    def finfunc(strings):
+        if os.environ.get("COLOR_OUTPUT") == '1':
+            return func(strings)
+        return strings
+
+    return finfunc
+
+
+ColorStr = _ColorStr()
 
 # testing
 if __name__ == '__main__':

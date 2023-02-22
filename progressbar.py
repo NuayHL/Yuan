@@ -1,3 +1,4 @@
+# -*- coding: UTF-8 -*-
 from collections.abc import Iterable
 from timer import Timer
 from colorstr import ColorStr as CO
@@ -191,15 +192,24 @@ class FormatBarPrint:
             fore_res = int(8 * (rlenth - ilenth))
             irlenth = '' if ilenth == self.bl else self.LIVE_BAR[fore_res]
             barstr = '|%s%s|' % (ilenth * self.LIVE_BAR[-1]+irlenth, (self.bl - ilenth - 1) * ' ')
-        forestr = '%s %s' % (barstr, percentage_str)
+        forestr = '%s %s ' % (barstr, percentage_str)
 
         if self.colored:
             forestr = self.fore_formate(forestr)
             midstr = self.mid_formate(midstr)
             endstr = self.end_formate(endstr)
 
-        print('\r%s %s ' % (forestr, midstr), end=endstr)
+        print('\r%s%s ' % (forestr, midstr), end=endstr)
 
+if __name__ == '__main__':
+    import time
+    a = range(1000)
+    bar = IterProgressBar(a, barlenth=40, eta_on=True, smoothed=True, colored=True,
+                          bar_color=CO.green_bg, mid_color=CO.purple_bg)
+
+    for i in bar:
+        bar.write('i = %s' % str(i))
+        time.sleep(0.02)
 
 
 
