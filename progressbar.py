@@ -161,7 +161,7 @@ def light_progressbar(percentage, endstr: str = '', barlenth=20):
 
 
 class FormatBarPrint:
-    LIVE_BAR = ['\u258F', '\u258E', '\u258D', '\u258C', '\u258B', '\u258A', '\u2589', '\u2588']
+    LIVE_BAR = [' ', '\u258F', '\u258E', '\u258D', '\u258C', '\u258B', '\u258A', '\u2589', '\u2588']
 
     def __init__(self, barlenth=20, percentage_formate='.1f',
                  asciibar=False, colored=True, smoothed=True,
@@ -189,9 +189,8 @@ class FormatBarPrint:
             barstr = '[%s%s]' % (ilenth * self.i, (self.bl-ilenth) * self.o)
         else:
             fore_res = int(8 * (rlenth - ilenth))
-            irlenth = '' if fore_res == 0 else self.LIVE_BAR[fore_res]
-            rilenth = ilenth if fore_res == 0 else ilenth + 1
-            barstr = '|%s%s|' % (ilenth * self.LIVE_BAR[-1]+irlenth, (self.bl - rilenth) * ' ')
+            irlenth = '' if ilenth == self.bl else self.LIVE_BAR[fore_res]
+            barstr = '|%s%s|' % (ilenth * self.LIVE_BAR[-1]+irlenth, (self.bl - ilenth - 1) * ' ')
         forestr = '%s %s' % (barstr, percentage_str)
 
         if self.colored:
