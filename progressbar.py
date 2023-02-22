@@ -6,7 +6,8 @@ from colorstr import ColorStr as CO
 class IterProgressBar:
     def __init__(self, iters, lenth=None,
                  barlenth=20, endstr='', percentage_formate='.1f', eta_on=False,
-                 colored=True, bar_color=None, mid_color=None, end_color=None):
+                 colored=True, asciibar=False, smoothed=True,
+                 bar_color=None, mid_color=None, end_color=None):
         self._count = -1
         self._max_iter = 0
         self._end = endstr
@@ -17,7 +18,8 @@ class IterProgressBar:
         bar_formate = CO.light_yellow if bar_color is None else bar_color
         eta_formate = CO.light_purple if mid_color is None else mid_color
         end_formate = CO.light_green if end_color is None else end_color
-        self._GenBar = FormatBarPrint(barlenth=barlenth, percentage_formate=percentage_formate, colored=colored,
+        self._GenBar = FormatBarPrint(barlenth=barlenth, percentage_formate=percentage_formate,
+                                      colored=colored, asciibar=asciibar, smoothed=smoothed,
                                       bar_formate=bar_formate, eta_formate=eta_formate, end_formate=end_formate)
 
         if self._count_eta:
@@ -82,6 +84,7 @@ class IterProgressBar:
             self._timer.tick()
             if self._stop:
                 counts_eta = f'[Total Time: {Timer.period_convert(self._timer.total_time())}]'
+                # counts_eta = f'[Total Time: {self._timer.total_time()}]'
             else:
                 time_in_iter = self._timer.average_time()
                 counts_eta = (self._max_iter - self._count) * time_in_iter
@@ -96,7 +99,7 @@ class IterProgressBar:
 
 class ManualProgressBar:
     def __init__(self, max_iter, barlenth=20, endstr='',
-                 percentage_formate='.1f', eta_on=False,
+                 percentage_formate='.1f', eta_on=False, asciibar=False, smoothed=True,
                  colored=True, bar_color=None, mid_color=None, end_color=None):
         self._count = 0
         self._max_iter = 0
@@ -109,7 +112,8 @@ class ManualProgressBar:
         bar_formate = CO.light_yellow if bar_color is None else bar_color
         eta_formate = CO.light_purple if mid_color is None else mid_color
         end_formate = CO.light_green if end_color is None else end_color
-        self._GenBar = FormatBarPrint(barlenth=barlenth, percentage_formate=percentage_formate, colored=colored,
+        self._GenBar = FormatBarPrint(barlenth=barlenth, percentage_formate=percentage_formate,
+                                      colored=colored, asciibar=asciibar, smoothed=smoothed,
                                       bar_formate=bar_formate, eta_formate=eta_formate, end_formate=end_formate)
 
         if self._count_eta:
@@ -157,15 +161,20 @@ def light_progressbar(percentage, endstr: str = '', barlenth=20):
 
 
 class FormatBarPrint:
-    def __init__(self, barlenth=20, finish='>', remain='-', percentage_formate='.1f', colored=True,
+    LIVE_BAR = ['\u258F', '\u258E', '\u258D', '\u258C', '\u258B', '\u258A', '\u2589', '\u2588']
+
+    def __init__(self, barlenth=20, percentage_formate='.1f',
+                 asciibar=False, colored=True, smoothed=True,
                  bar_formate=CO.light_yellow, eta_formate=CO.light_purple, end_formate=CO.light_green):
-        self.i = finish
-        self.o = remain
         self.bl = barlenth
         self.pf = percentage_formate
         self.colored = colored
-        self.bar_formate = bar_formate
-        self.eta_formate = eta_formate
+        self.asciibar = asciibar
+        self.i = '>' if self.asciibar else '\u2588'
+        self.o = '-' if self.asciibar else ' '
+        self.smoothed = smoothed
+        self.fore_formate = bar_formate
+        self.mid_formate = eta_formate
         self.end_formate = end_formate
 
     def print(self, current: int, total: int, midstr='', endstr=''):
@@ -174,15 +183,23 @@ class FormatBarPrint:
             percentage_str = '%d/%d' % (current, total)
         else:
             percentage_str = format(percentage * 100, self.pf) + '%'
-        ilenth = int(percentage * self.bl)
-        barstr = '[%s%s] %s' % (ilenth * self.i, (self.bl-ilenth) * self.o, percentage_str)
+        rlenth = percentage * self.bl
+        ilenth = int(rlenth)
+        if not self.smoothed:
+            barstr = '[%s%s]' % (ilenth * self.i, (self.bl-ilenth) * self.o)
+        else:
+            fore_res = int(8 * (rlenth - ilenth))
+            irlenth = '' if fore_res == 0 else self.LIVE_BAR[fore_res]
+            rilenth = ilenth if fore_res == 0 else ilenth + 1
+            barstr = '|%s%s|' % (ilenth * self.LIVE_BAR[-1]+irlenth, (self.bl - rilenth) * ' ')
+        forestr = '%s %s' % (barstr, percentage_str)
 
         if self.colored:
-            barstr = self.bar_formate(barstr)
-            midstr = self.eta_formate(midstr)
+            forestr = self.fore_formate(forestr)
+            midstr = self.mid_formate(midstr)
             endstr = self.end_formate(endstr)
 
-        print('\r%s %s ' % (barstr, midstr), end=endstr)
+        print('\r%s %s ' % (forestr, midstr), end=endstr)
 
 
 

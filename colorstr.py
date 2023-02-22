@@ -12,6 +12,10 @@ class ColorStr:
         return f'\033[1m{strings}\033[0m'
 
     @staticmethod
+    def crossline(strings):
+        return f'\033[9m{strings}\033[0m'
+
+    @staticmethod
     def underline(strings):
         return f'\033[4m{strings}\033[0m'
 
@@ -36,12 +40,12 @@ class ColorStr:
         return f'\033[32m{strings}\033[0m'
 
     @staticmethod
-    def light_green(strings):
-        return f'\033[92m{strings}\033[0m'
-
-    @staticmethod
     def thick_green(strings):
         return f'\033[1;32m{strings}\033[0m'
+
+    @staticmethod
+    def light_green(strings):
+        return f'\033[92m{strings}\033[0m'
 
     @staticmethod
     def thick_light_green(strings):
@@ -111,12 +115,87 @@ class ColorStr:
     def thick_light_cyan(strings):
         return f'\033[1;96m{strings}\033[0m'
 
+    @staticmethod
+    def grey(strings):
+        return f'\033[90m{strings}\033[0m'
+
+    @staticmethod
+    def thick_grey(strings):
+        return f'\033[1;90m{strings}\033[0m'
+
+    @staticmethod
+    def light_grey(strings):
+        return f'\033[37m{strings}\033[0m'
+
+    @staticmethod
+    def thick_light_grey(strings):
+        return f'\033[1;37m{strings}\033[0m'
+
+    @staticmethod
+    def white_bg(strings):
+        return f'\033[7m{strings}\033[0m'
+
+    @staticmethod
+    def grey_bg(strings):
+        return f'\033[7;37m{strings}\033[0m'
+
+    @staticmethod
+    def yellow_bg(strings):
+        return f'\033[7:33m{strings}\033[0m'
+
+    @staticmethod
+    def light_yellow_bg(strings):
+        return f'\033[7:93m{strings}\033[0m'
+
+    @staticmethod
+    def green_bg(strings):
+        return f'\033[7;32m{strings}\033[0m'
+
+    @staticmethod
+    def light_green_bg(strings):
+        return f'\033[7;92m{strings}\033[0m'
+
+    @staticmethod
+    def red_bg(strings):
+        return f'\033[7;31m{strings}\033[0m'
+
+    @staticmethod
+    def light_red_bg(strings):
+        return f'\033[7;91m{strings}\033[0m'
+
+    @staticmethod
+    def blue_bg(strings):
+        return f'\033[7;34m{strings}\033[0m'
+
+    @staticmethod
+    def light_blue_bg(strings):
+        return f'\033[7;94m{strings}\033[0m'
+
+    @staticmethod
+    def purple_bg(strings):
+        return f'\033[7;35m{strings}\033[0m'
+
+    @staticmethod
+    def light_purple_bg(strings):
+        return f'\033[7;95m{strings}\033[0m'
+
+    @staticmethod
+    def cyan_bg(strings):
+        return f'\033[7;36m{strings}\033[0m'
+
+    @staticmethod
+    def light_cyan_bg(strings):
+        return f'\033[7;96m{strings}\033[0m'
+
+    @staticmethod
+    def test_sample(test_strings=None):
+        test_strings = '[TEST] This is a message: 1234567890 ,.[]{}()\"\';' if test_strings is None else test_strings
+        for func in ColorStr.__dict__:
+            if not func.startswith(('__', 'test_sample')):
+                print(getattr(ColorStr, func)(test_strings), end=': ')
+                print(func)
 
 # testing
 if __name__ == '__main__':
-    a = 'haha [] == <> {} . , / \\ \' \"'
-    for func in ColorStr.__dict__:
-        if not func.startswith('__'):
-            print(func, end=': ')
-            print(getattr(ColorStr, func)(a))
+    ColorStr.test_sample()
 
