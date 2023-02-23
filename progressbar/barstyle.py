@@ -1,5 +1,5 @@
 from colorstr import ColorStr as co
-
+from typing import Any, Callable
 
 def _styleCreator(lists):
     class colorstyle:
@@ -78,25 +78,25 @@ class SimpleStyle(DefaultStyle):
     barcolor = None
 
 
-def styleCreator(super=DefaultStyle,
-                 pure_=False,
-                 const_prestr_=False,
-                 const_endstr_=False,
-                 update_str_=False,
-                 eta_=False,
-                 percentage_=False,
-                 bar_pure_=False,
-                 bar_pre_=False,
-                 bar_mid_=False,
-                 bar_end_=False,
-                 i_char_=False,
-                 o_char_=False,
-                 smooth_=False,
-                 live_char_=False,
-                 one_repeat_period_=False,
-                 start_char_=False,
-                 end_char_=False,
-                 percentage_format_=False):
+def styleCreator(super: Any = DefaultStyle,
+                 pure_: Callable = False,
+                 const_prestr_: Callable = False,
+                 const_endstr_: Callable = False,
+                 update_str_: Callable = False,
+                 eta_: Callable = False,
+                 percentage_: Callable = False,
+                 bar_pure_: Callable = False,
+                 bar_pre_: Callable = False,
+                 bar_mid_: Callable = False,
+                 bar_end_: Callable = False,
+                 i_char_: str = False,
+                 o_char_: str = False,
+                 smooth_: int = False,
+                 live_char_: list = False,
+                 one_repeat_period_: float = False,
+                 start_char_: str = False,
+                 end_char_: str = False,
+                 percentage_format_: str = False):
     class colorstyle:
         pure = super.barcolor.pure if super is not None and pure_ is False else pure_
         const_prestr = super.barcolor.const_prestr if super is not None and const_prestr_ is False else const_prestr_
@@ -154,6 +154,8 @@ _wave_char = ['\u2581\u2582\u2583\u2584\u2585\u2586\u2587\u2588',
               '\u2582\u2583\u2584\u2585\u2586\u2587\u2588\u2587',
               '\u2581\u2582\u2583\u2584\u2585\u2586\u2587\u2588']
 
+_block_circle_char = ['\u2596','\u258C','\u2598','\u2580',
+                '\u259D','\u2590','\u2597','\u2584',]
 
 class BuiltinStyle:
     default = _styleCreator(_default_style)
@@ -166,3 +168,4 @@ class BuiltinStyle:
     up_smooth_2 = styleCreator(super=up_smooth_1, smooth_=2, start_char_='', end_char_='')
     up_smooth_3 = styleCreator(super=up_smooth_2, smooth_=3, one_repeat_period_=0.5)
     wave_smooth_3 = styleCreator(super=up_smooth_3, live_char_=_wave_char, one_repeat_period_=2.0)
+    circle_smooth_3 = styleCreator(super=left_smooth_3, live_char_=_block_circle_char, one_repeat_period_=1.0)
