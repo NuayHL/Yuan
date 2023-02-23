@@ -1,5 +1,8 @@
 # -*- coding: UTF-8 -*-
 import os
+
+import colorama
+
 os.environ["SIMPLE_OUTPUT"] = '0'
 
 class _ColorFormat:
@@ -9,6 +12,10 @@ class _ColorFormat:
             start_idx = strings.find('\033')
             end_idx = strings[start_idx:].find('m') + 1 + start_idx
             strings = strings[:start_idx] + strings[end_idx:]
+        return strings
+
+    @staticmethod
+    def none(strings):
         return strings
 
     @staticmethod
@@ -219,5 +226,6 @@ ColorStr = _ColorStr()
 
 # testing
 if __name__ == '__main__':
+    colorama.init()
     # os.environ["SIMPLE_OUTPUT"] = '1'
     ColorStr.test_sample()

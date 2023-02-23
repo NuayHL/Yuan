@@ -1,9 +1,9 @@
 # -*- coding: UTF-8 -*-
 import os
 from collections.abc import Iterable
-from colorstr import ColorStr as co
-from progressbar.barstyle import BarStyle, SimpleStyle
+from progressbar.barstyle import BuiltinStyle, SimpleStyle
 from timer import Timer
+import time
 import threading
 from queue import Queue
 
@@ -12,7 +12,7 @@ os.environ['SIMPLE_BAR'] = '0'
 class IterProgressBar:
     def __init__(self, iters, max_iter=None, barlenth=20, endstr='', prestr='',
                  percentage_formate='.1f', eta_on=True, simplebar=False,
-                 colored=True, barstyle: BarStyle = BarStyle):
+                 colored=True, barstyle = BuiltinStyle.default):
         self._count = -1
         self._max_iter = 0
         self._end = endstr
@@ -102,7 +102,7 @@ class IterProgressBar:
 class ManualProgressBar:
     def __init__(self, max_iter, barlenth=20, endstr='', prestr='',
                  percentage_formate='.1f', eta_on=True, simplebar=False,
-                 colored=True, barstyle: BarStyle = BarStyle):
+                 colored=True, barstyle = BuiltinStyle.default):
         self._count = 0
         self._max_iter = 0
         self._end = endstr
@@ -166,10 +166,10 @@ def light_progressbar(percentage, endstr: str = '', barlenth=20):
 
 
 class FormatBarPrint:
-    def __init__(self, barlenth=20, percentage_formate='.1f', colored=True, barstyle =BarStyle):
+    def __init__(self, barlenth=20, percentage_formate='.1f', colored=True, barstyle=BuiltinStyle.default):
         self.bl = barlenth
         self.pf = percentage_formate
-        self.colored = colored
+        self.colored = colored and barstyle.barcolor
         self.barstyle = barstyle
         self.i = barstyle.barformat.i_char
         self.o = barstyle.barformat.o_char
@@ -180,7 +180,7 @@ class FormatBarPrint:
             self.llc = len(self.barstyle.barformat.live_char)
             self.live_c = [' '] + self.barstyle.barformat.live_char
         elif self.smooth == 3:
-            self.llc = len(self.barstyle.barformat.live_char)
+            self.llc = len(self.barstyle.barformat.live_char)-1
             self.live_c = self.barstyle.barformat.live_char
             self.period = self.barstyle.barformat.one_repeat_period
             self.queue = Queue(1)
@@ -190,7 +190,7 @@ class FormatBarPrint:
             self.char_anime.start()
 
     def _print(self):
-        percentage_str = ''
+        percentage_str = '0.0%' if self.pf != 'num' else '0/0'
         const_prestr = ''
         const_endstr = ''
         eta = ''
@@ -199,14 +199,15 @@ class FormatBarPrint:
         timer.start()
         while True:
             time.sleep(0.1)
-            bar_idx = int(timer.up2now() * self.llc) % self.llc
+            bar_idx = int(timer.up2now() / self.period * self.llc) % self.llc
             barstr = self.live_c[bar_idx]
             if self.stop_sigal:
                 const_prestr, percentage_str, const_endstr, eta, endstr = self.last_str.get()
+                barstr = self.live_c[-1]
             elif not self.queue.empty():
                 const_prestr, percentage_str, const_endstr, eta, endstr = self.queue.get()
             front_string, true_end = self._color(const_prestr, barstr, percentage_str, const_endstr, eta, endstr)
-            print('\r', front_string, end=true_end)
+            print('\r' + front_string, end=true_end)
             if self.stop_sigal:
                 break
         return
@@ -229,26 +230,28 @@ class FormatBarPrint:
         return barstr
 
     def _color(self, *args):
-        if not self.colored:
+        if not self.colored or self.barstyle.barcolor.pure:
             args = list(args)
             args[1] = self.bs + args[1] + self.be
-            return ' '.join(args[:-1]), ' ' + args[-1]
-        if self.barstyle.barcolor.pure:
-            args = list(args)
-            args[1] = self.bs + args[1] + self.be
-            return map(self.barstyle.barcolor.pure, (' '.join(args[:-1]), args[-1]))
+            fore_args = []
+            for arg in args[:-1]:
+                if arg != '': fore_args.append(arg)
+            full_bar_str = ' '.join(fore_args), ' ' + args[-1]
+            if not self.colored:
+                return full_bar_str
+            full_bar_str = self.barstyle.barcolor.pure(full_bar_str)
+            return full_bar_str
         fullbar = ''
         if args[0] != '':
-            # fullbar += self.barstyle.barcolor.const_prestr(args[0])
-            fullbar += self.barstyle.barcolor.const_prestr(args[0])
+            fullbar += self.barstyle.barcolor.const_prestr(args[0]) + ' '
         if self.barstyle.barcolor.bar_pure:
             fullbar = fullbar +\
-                self.barstyle.barcolor.bar_pure(' ' + self.bs + args[1] + self.be + ' ') # add space
+                self.barstyle.barcolor.bar_pure(self.bs + args[1] + self.be + ' ') # add space
         else:
-            fullbar = fullbar + ' ' + self.barstyle.barcolor.bar_pre(self.bs) + \
+            fullbar = fullbar + self.barstyle.barcolor.bar_pre(self.bs) + \
                       self.barstyle.barcolor.bar_mid(args[1]) + \
                       self.barstyle.barcolor.bar_end(self.be + ' ')
-        fullbar += self.barstyle.barcolor.precentage(args[2]) # add space
+        fullbar += self.barstyle.barcolor.percentage(args[2]) # add space
         if args[3] != '':
             fullbar += ' ' + self.barstyle.barcolor.const_endstr(args[3]) # add space
         if args[4] != '':
@@ -279,18 +282,21 @@ class FormatBarPrint:
         print('\r' + front_string, end=true_end)
 
 if __name__ == '__main__':
-    import time
     a = range(1000)
-    # os.environ['SIMPLE_BAR'] = '1'
-    itbar = IterProgressBar(a, prestr='TEST:', endstr='to be Completed', percentage_formate='num', eta_on=True)
-    for i in itbar:
-        itbar.write('i = %s' % threading.active_count())
-        time.sleep(0.02)
+    os.environ['SIMPLE_BAR'] = '0'
 
-    bar = ManualProgressBar(1000, prestr='TEST:', endstr='to be Completed', percentage_formate='num', eta_on=True)
+    # bar = ManualProgressBar(100, prestr='pre_str', endstr='end_str')
+    # for i in a:
+    #     bar.update('i = %s' % i)
+    #     time.sleep(0.02)
+    bar = ManualProgressBar(len(a), prestr='pre_str', endstr='end_str', barstyle=BuiltinStyle.left_smooth_3)
     for i in a:
-        bar.update('i = %s' % threading.active_count())
+        bar.update('i = %s' % i)
         time.sleep(0.02)
+    # bar = ManualProgressBar(100, prestr='pre_str', endstr='end_str', barstyle=BuiltinStyle.simple)
+    # for i in a:
+    #     bar.update('i = %s' % i)
+    #     time.sleep(0.02)
 
 
 
