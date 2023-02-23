@@ -11,7 +11,7 @@ os.environ['SIMPLE_BAR'] = '0'
 
 class IterProgressBar:
     def __init__(self, iters, max_iter=None, barlenth=20, endstr='', prestr='',
-                 percentage_formate='.1f', eta_on=True, simplebar=False,
+                 percentage_formate=None, eta_on=True, simplebar=False,
                  colored=True, barstyle = BuiltinStyle.default):
         self._count = -1
         self._max_iter = 0
@@ -101,7 +101,7 @@ class IterProgressBar:
 
 class ManualProgressBar:
     def __init__(self, max_iter, barlenth=20, endstr='', prestr='',
-                 percentage_formate='.1f', eta_on=True, simplebar=False,
+                 percentage_formate=None, eta_on=True, simplebar=False,
                  colored=True, barstyle = BuiltinStyle.default):
         self._count = 0
         self._max_iter = 0
@@ -168,9 +168,9 @@ def light_progressbar(percentage, endstr: str = '', barlenth=20):
 class FormatBarPrint:
     def __init__(self, barlenth=20, percentage_formate='.1f', colored=True, barstyle=BuiltinStyle.default):
         self.bl = barlenth
-        self.pf = percentage_formate
         self.colored = colored and barstyle.barcolor
         self.barstyle = barstyle
+        self.pf = barstyle.barformat.percentage_format if percentage_formate is None else percentage_formate
         self.i = barstyle.barformat.i_char
         self.o = barstyle.barformat.o_char
         self.bs = barstyle.barformat.start_char
@@ -289,7 +289,8 @@ if __name__ == '__main__':
     # for i in a:
     #     bar.update('i = %s' % i)
     #     time.sleep(0.02)
-    bar = ManualProgressBar(len(a), prestr='pre_str', endstr='end_str', barstyle=BuiltinStyle.left_smooth_3)
+    bar = ManualProgressBar(len(a), prestr='pre_str', endstr='end_str', barstyle=BuiltinStyle.default,
+                            percentage_formate='num')
     for i in a:
         bar.update('i = %s' % i)
         time.sleep(0.02)

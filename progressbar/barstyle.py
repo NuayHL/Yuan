@@ -158,6 +158,7 @@ _wave_char = ['\u2581\u2582\u2583\u2584\u2585\u2586\u2587\u2588',
 class BuiltinStyle:
     default = _styleCreator(_default_style)
     simple = SimpleStyle
+    num_default = styleCreator(super=default, percentage_format_='num')
     left_smooth_1 = _styleCreator(_default_style)
     left_smooth_2 = styleCreator(super=left_smooth_1, smooth_=2, start_char_='', end_char_='')
     left_smooth_3 = styleCreator(super=left_smooth_2, smooth_=3, one_repeat_period_=0.5)
