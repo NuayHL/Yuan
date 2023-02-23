@@ -45,7 +45,7 @@ class _MyBarColor:
     const_endstr = co.green
     update_str = co.yellow
     percentage = co.red
-    eta = co.purple
+    eta = co.purple_bg
     bar_pure = None
     bar_pre = co.red
     bar_mid = co.green
@@ -128,26 +128,23 @@ def styleCreator(super=DefaultStyle,
     return Style
 
 
-_default_style = [None, co.red, co.green, co.yellow, co.purple, co.red,
+_default_style = [None, co.red, co.green, co.yellow, co.purple_bg, co.red,
                   None, co.red, co.green, co.red,
                   '>', '-',
                   1, ['\u258F', '\u258E', '\u258D', '\u258C', '\u258B', '\u258A', '\u2589', '\u2588'],
                   0.5,
                   '|', '|', '.1f']
 
-_up_style = [None, co.red, co.green, co.yellow, co.purple, co.red,
-             None, co.red, co.green, co.red,
-             '>', '-',
-             1, ['\u2581', '\u2582', '\u2583', '\u2584', '\u2585', '\u2586', '\u2587', '\u2588'],
-             0.5,
-             '|', '|', '.1f']
+_up_char = ['\u2581', '\u2582', '\u2583', '\u2584', '\u2585', '\u2586', '\u2587', '\u2588']
 
-_wave_char = ['\u2582\u2583\u2584\u2585\u2586\u2587\u2588\u2587',
+_wave_char = ['\u2581\u2582\u2583\u2584\u2585\u2586\u2587\u2588',
+              '\u2582\u2583\u2584\u2585\u2586\u2587\u2588\u2587',
               '\u2583\u2584\u2585\u2586\u2587\u2588\u2587\u2586',
               '\u2584\u2585\u2586\u2587\u2588\u2587\u2586\u2585',
               '\u2585\u2586\u2587\u2588\u2587\u2586\u2585\u2584',
               '\u2586\u2587\u2588\u2587\u2586\u2585\u2584\u2583',
               '\u2587\u2588\u2587\u2586\u2585\u2584\u2583\u2582',
+              '\u2588\u2587\u2586\u2585\u2584\u2583\u2582\u2581',
               '\u2588\u2587\u2586\u2585\u2584\u2583\u2582\u2581',
               '\u2587\u2588\u2587\u2586\u2585\u2584\u2583\u2582',
               '\u2586\u2587\u2588\u2587\u2586\u2585\u2584\u2583',
@@ -164,7 +161,7 @@ class BuiltinStyle:
     left_smooth_1 = _styleCreator(_default_style)
     left_smooth_2 = styleCreator(super=left_smooth_1, smooth_=2, start_char_='', end_char_='')
     left_smooth_3 = styleCreator(super=left_smooth_2, smooth_=3, one_repeat_period_=0.5)
-    up_smooth_1 = _styleCreator(_up_style)
+    up_smooth_1 = styleCreator(super=default, live_char_=_up_char)
     up_smooth_2 = styleCreator(super=up_smooth_1, smooth_=2, start_char_='', end_char_='')
     up_smooth_3 = styleCreator(super=up_smooth_2, smooth_=3, one_repeat_period_=0.5)
     wave_smooth_3 = styleCreator(super=up_smooth_3, live_char_=_wave_char, one_repeat_period_=2.0)

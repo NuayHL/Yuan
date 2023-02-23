@@ -1,8 +1,6 @@
 # -*- coding: UTF-8 -*-
 import os
 
-import colorama
-
 os.environ["SIMPLE_OUTPUT"] = '0'
 
 class _ColorFormat:
