@@ -1,6 +1,6 @@
 # -*- coding: UTF-8 -*-
 import os
-os.environ["COLOR_OUTPUT"] = '1'
+os.environ["SIMPLE_OUTPUT"] = '0'
 
 class _ColorFormat:
     @staticmethod
@@ -206,7 +206,9 @@ class _ColorStr(_ColorFormat):
 
 def _ColorControl(func):
     def finfunc(strings):
-        if os.environ.get("COLOR_OUTPUT") == '1':
+        if strings == '':
+            return strings
+        if os.environ.get("SIMPLE_OUTPUT") != '1':
             return func(strings)
         return strings
 
@@ -217,5 +219,5 @@ ColorStr = _ColorStr()
 
 # testing
 if __name__ == '__main__':
+    # os.environ["SIMPLE_OUTPUT"] = '1'
     ColorStr.test_sample()
-

@@ -1,6 +1,5 @@
 import time
 
-
 class Timer:
     def __init__(self, avg_count_lenth:int = 0):
         self.reset()
@@ -48,6 +47,9 @@ class Timer:
         self._start_time = current_time
         return self._period
 
+    def up2now(self):
+        return time.perf_counter() - self._start_time
+
     def is_paused(self):
         return self._start_time is None
 
@@ -67,7 +69,7 @@ class Timer:
         return self._total_time
 
     @staticmethod
-    def period_convert(seconds):
+    def period2str(seconds):
         fin = ''
         if seconds > 3600:
             hours = seconds//3600
@@ -80,4 +82,20 @@ class Timer:
             fin += '%dm ' % mins
             seconds %= 60
         fin += '%.fs' % seconds
+        return fin
+
+    @staticmethod
+    def period2list(seconds):
+        fin = [0.0, 0.0, 0.0]
+        if seconds > 3600:
+            hours = seconds//3600
+            fin[0] = hours
+            seconds %= 3600
+            mins = seconds // 60
+            fin[1] = mins
+        elif seconds > 60:
+            mins = seconds // 60
+            fin[1] = mins
+            seconds %= 60
+        fin[2] = seconds
         return fin
