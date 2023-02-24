@@ -186,8 +186,8 @@ class FormatBarPrint:
             self.queue = Queue(1)
             self.last_str = Queue(1)
             self.stop_sigal = False
+            self.start_signal = False
             self.char_anime = threading.Thread(target=self._print)
-            self.char_anime.start()
 
     def _print(self):
         percentage_str = '0.0%' if self.pf != 'num' else '0/0'
@@ -203,7 +203,7 @@ class FormatBarPrint:
             barstr = self.live_c[bar_idx]
             if self.stop_sigal:
                 const_prestr, percentage_str, const_endstr, eta, endstr = self.last_str.get()
-                barstr = self.live_c[-1]
+                # barstr = self.live_c[-1]
             elif not self.queue.empty():
                 const_prestr, percentage_str, const_endstr, eta, endstr = self.queue.get()
             front_string, true_end = self._color(const_prestr, barstr, percentage_str, const_endstr, eta, endstr)
@@ -268,10 +268,14 @@ class FormatBarPrint:
             percentage_str = format(percentage * 100, self.pf) + '%'
 
         if self.smooth == 3:
+            if not self.start_signal:
+                self.char_anime.start()
+                self.start_signal = True
             if stop:
                 self.last_str.put((const_prestr, percentage_str, const_endstr, eta, endstr))
                 self.stop_sigal = stop
                 self.char_anime.join()
+                self.start_signal = False
             else:
                 if self.queue.empty():
                     self.queue.put((const_prestr, percentage_str, const_endstr, eta, endstr))
