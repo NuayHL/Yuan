@@ -1,6 +1,5 @@
 # -*- coding: UTF-8 -*-
 import os
-
 os.environ["SIMPLE_OUTPUT"] = '0'
 
 class _ColorFormat:
@@ -253,14 +252,6 @@ class _ColorFormat:
         return f'\033[7;30;47m{strings}\033[0m'
 
     @staticmethod
-    def red_with_black_bg(strings):
-        return f'\033[31;40m{strings}\033[0m'
-
-    @staticmethod
-    def black_with_red_bg(strings):
-        return f'\033[7;31;40m{strings}\033[0m'
-
-    @staticmethod
     def red_with_green_bg(strings):
         return f'\033[31;42m{strings}\033[0m'
 
@@ -309,22 +300,6 @@ class _ColorFormat:
         return f'\033[7;31;47m{strings}\033[0m'
 
     @staticmethod
-    def green_with_black_bg(strings):
-        return f'\033[32;40m{strings}\033[0m'
-
-    @staticmethod
-    def black_with_green_bg(strings):
-        return f'\033[7;32;40m{strings}\033[0m'
-
-    @staticmethod
-    def green_with_red_bg(strings):
-        return f'\033[32;41m{strings}\033[0m'
-
-    @staticmethod
-    def red_with_green_bg(strings):
-        return f'\033[7;32;41m{strings}\033[0m'
-
-    @staticmethod
     def green_with_yellow_bg(strings):
         return f'\033[32;43m{strings}\033[0m'
 
@@ -365,30 +340,6 @@ class _ColorFormat:
         return f'\033[7;32;47m{strings}\033[0m'
 
     @staticmethod
-    def yellow_with_black_bg(strings):
-        return f'\033[33;40m{strings}\033[0m'
-
-    @staticmethod
-    def black_with_yellow_bg(strings):
-        return f'\033[7;33;40m{strings}\033[0m'
-
-    @staticmethod
-    def yellow_with_red_bg(strings):
-        return f'\033[33;41m{strings}\033[0m'
-
-    @staticmethod
-    def red_with_yellow_bg(strings):
-        return f'\033[7;33;41m{strings}\033[0m'
-
-    @staticmethod
-    def yellow_with_green_bg(strings):
-        return f'\033[33;42m{strings}\033[0m'
-
-    @staticmethod
-    def green_with_yellow_bg(strings):
-        return f'\033[7;33;42m{strings}\033[0m'
-
-    @staticmethod
     def yellow_with_blue_bg(strings):
         return f'\033[33;44m{strings}\033[0m'
 
@@ -421,38 +372,6 @@ class _ColorFormat:
         return f'\033[7;33;47m{strings}\033[0m'
 
     @staticmethod
-    def blue_with_black_bg(strings):
-        return f'\033[34;40m{strings}\033[0m'
-
-    @staticmethod
-    def black_with_blue_bg(strings):
-        return f'\033[7;34;40m{strings}\033[0m'
-
-    @staticmethod
-    def blue_with_red_bg(strings):
-        return f'\033[34;41m{strings}\033[0m'
-
-    @staticmethod
-    def red_with_blue_bg(strings):
-        return f'\033[7;34;41m{strings}\033[0m'
-
-    @staticmethod
-    def blue_with_green_bg(strings):
-        return f'\033[34;42m{strings}\033[0m'
-
-    @staticmethod
-    def green_with_blue_bg(strings):
-        return f'\033[7;34;42m{strings}\033[0m'
-
-    @staticmethod
-    def blue_with_yellow_bg(strings):
-        return f'\033[34;43m{strings}\033[0m'
-
-    @staticmethod
-    def yellow_with_blue_bg(strings):
-        return f'\033[7;34;43m{strings}\033[0m'
-
-    @staticmethod
     def blue_with_purple_bg(strings):
         return f'\033[34;45m{strings}\033[0m'
 
@@ -477,46 +396,6 @@ class _ColorFormat:
         return f'\033[7;34;47m{strings}\033[0m'
 
     @staticmethod
-    def purple_with_black_bg(strings):
-        return f'\033[35;40m{strings}\033[0m'
-
-    @staticmethod
-    def black_with_purple_bg(strings):
-        return f'\033[7;35;40m{strings}\033[0m'
-
-    @staticmethod
-    def purple_with_red_bg(strings):
-        return f'\033[35;41m{strings}\033[0m'
-
-    @staticmethod
-    def red_with_purple_bg(strings):
-        return f'\033[7;35;41m{strings}\033[0m'
-
-    @staticmethod
-    def purple_with_green_bg(strings):
-        return f'\033[35;42m{strings}\033[0m'
-
-    @staticmethod
-    def green_with_purple_bg(strings):
-        return f'\033[7;35;42m{strings}\033[0m'
-
-    @staticmethod
-    def purple_with_yellow_bg(strings):
-        return f'\033[35;43m{strings}\033[0m'
-
-    @staticmethod
-    def yellow_with_purple_bg(strings):
-        return f'\033[7;35;43m{strings}\033[0m'
-
-    @staticmethod
-    def purple_with_blue_bg(strings):
-        return f'\033[35;44m{strings}\033[0m'
-
-    @staticmethod
-    def blue_with_purple_bg(strings):
-        return f'\033[7;35;44m{strings}\033[0m'
-
-    @staticmethod
     def purple_with_cyan_bg(strings):
         return f'\033[35;46m{strings}\033[0m'
 
@@ -533,116 +412,12 @@ class _ColorFormat:
         return f'\033[7;35;47m{strings}\033[0m'
 
     @staticmethod
-    def cyan_with_black_bg(strings):
-        return f'\033[36;40m{strings}\033[0m'
-
-    @staticmethod
-    def black_with_cyan_bg(strings):
-        return f'\033[7;36;40m{strings}\033[0m'
-
-    @staticmethod
-    def cyan_with_red_bg(strings):
-        return f'\033[36;41m{strings}\033[0m'
-
-    @staticmethod
-    def red_with_cyan_bg(strings):
-        return f'\033[7;36;41m{strings}\033[0m'
-
-    @staticmethod
-    def cyan_with_green_bg(strings):
-        return f'\033[36;42m{strings}\033[0m'
-
-    @staticmethod
-    def green_with_cyan_bg(strings):
-        return f'\033[7;36;42m{strings}\033[0m'
-
-    @staticmethod
-    def cyan_with_yellow_bg(strings):
-        return f'\033[36;43m{strings}\033[0m'
-
-    @staticmethod
-    def yellow_with_cyan_bg(strings):
-        return f'\033[7;36;43m{strings}\033[0m'
-
-    @staticmethod
-    def cyan_with_blue_bg(strings):
-        return f'\033[36;44m{strings}\033[0m'
-
-    @staticmethod
-    def blue_with_cyan_bg(strings):
-        return f'\033[7;36;44m{strings}\033[0m'
-
-    @staticmethod
-    def cyan_with_purple_bg(strings):
-        return f'\033[36;45m{strings}\033[0m'
-
-    @staticmethod
-    def purple_with_cyan_bg(strings):
-        return f'\033[7;36;45m{strings}\033[0m'
-
-    @staticmethod
     def cyan_with_grey_bg(strings):
         return f'\033[36;47m{strings}\033[0m'
 
     @staticmethod
     def grey_with_cyan_bg(strings):
         return f'\033[7;36;47m{strings}\033[0m'
-
-    @staticmethod
-    def grey_with_black_bg(strings):
-        return f'\033[90;40m{strings}\033[0m'
-
-    @staticmethod
-    def black_with_grey_bg(strings):
-        return f'\033[7;90;40m{strings}\033[0m'
-
-    @staticmethod
-    def grey_with_red_bg(strings):
-        return f'\033[90;41m{strings}\033[0m'
-
-    @staticmethod
-    def red_with_grey_bg(strings):
-        return f'\033[7;90;41m{strings}\033[0m'
-
-    @staticmethod
-    def grey_with_green_bg(strings):
-        return f'\033[90;42m{strings}\033[0m'
-
-    @staticmethod
-    def green_with_grey_bg(strings):
-        return f'\033[7;90;42m{strings}\033[0m'
-
-    @staticmethod
-    def grey_with_yellow_bg(strings):
-        return f'\033[90;43m{strings}\033[0m'
-
-    @staticmethod
-    def yellow_with_grey_bg(strings):
-        return f'\033[7;90;43m{strings}\033[0m'
-
-    @staticmethod
-    def grey_with_blue_bg(strings):
-        return f'\033[90;44m{strings}\033[0m'
-
-    @staticmethod
-    def blue_with_grey_bg(strings):
-        return f'\033[7;90;44m{strings}\033[0m'
-
-    @staticmethod
-    def grey_with_purple_bg(strings):
-        return f'\033[90;45m{strings}\033[0m'
-
-    @staticmethod
-    def purple_with_grey_bg(strings):
-        return f'\033[7;90;45m{strings}\033[0m'
-
-    @staticmethod
-    def grey_with_cyan_bg(strings):
-        return f'\033[90;46m{strings}\033[0m'
-
-    @staticmethod
-    def cyan_with_grey_bg(strings):
-        return f'\033[7;90;46m{strings}\033[0m'
 
     @staticmethod
     def light_grey_with_black_bg(strings):
@@ -1035,8 +810,6 @@ class _ColorFormat:
     @staticmethod
     def grey_with_light_cyan_bg(strings):
         return f'\033[7;96;47m{strings}\033[0m'
-
-
 
 class _ColorStr(_ColorFormat):
     def __getattribute__(self, item):

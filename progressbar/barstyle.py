@@ -128,7 +128,7 @@ def styleCreator(super: Any = DefaultStyle,
     return Style
 
 
-_default_style = [None, co.red, co.green, co.yellow, co.purple_bg, co.red,
+_default_style = [None, co.red, co.red, co.yellow, co.purple, co.red,
                   None, co.red, co.green, co.red,
                   '>', '-',
                   1, ['\u258F', '\u258E', '\u258D', '\u258C', '\u258B', '\u258A', '\u2589', '\u2588'],

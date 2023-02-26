@@ -198,7 +198,7 @@ class FormatBarPrint:
         timer = Timer()
         timer.start()
         while True:
-            time.sleep(0.1)
+            time.sleep(0.033)
             bar_idx = int(timer.up2now() / self.period * self.llc) % self.llc
             barstr = self.live_c[bar_idx]
             if self.stop_sigal:
@@ -236,11 +236,11 @@ class FormatBarPrint:
             fore_args = []
             for arg in args[:-1]:
                 if arg != '': fore_args.append(arg)
-            full_bar_str = ' '.join(fore_args), ' ' + args[-1]
+            front_str, end_str = ' '.join(fore_args), ' ' + args[-1]
             if not self.colored:
-                return full_bar_str
-            full_bar_str = self.barstyle.barcolor.pure(full_bar_str)
-            return full_bar_str
+                return front_str, end_str
+            front_str, end_str = map(self.barstyle.barcolor.pure, (front_str, end_str))
+            return front_str, end_str
         fullbar = ''
         if args[0] != '':
             fullbar += self.barstyle.barcolor.const_prestr(args[0]) + ' '
