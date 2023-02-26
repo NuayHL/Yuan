@@ -155,7 +155,7 @@ _wave_char = ['\u2581\u2582\u2583\u2584\u2585\u2586\u2587\u2588',
               '\u2581\u2582\u2583\u2584\u2585\u2586\u2587\u2588']
 
 _block_circle_char = ['\u2596','\u258C','\u2598','\u2580',
-                '\u259D','\u2590','\u2597','\u2584',]
+                      '\u259D','\u2590','\u2597','\u2584',]
 
 class BuiltinStyle:
     default = _styleCreator(_default_style)
