@@ -294,7 +294,7 @@ if __name__ == '__main__':
     #     bar.update('i = %s' % i)
     #     time.sleep(0.02)
     bar = ManualProgressBar(len(a), prestr='pre_str', endstr='end_str', barstyle=BuiltinStyle.default,
-                            percentage_formate='num')
+                            percentage_formate='.1f')
     for i in a:
         bar.update('i = %s' % i)
         time.sleep(0.02)
