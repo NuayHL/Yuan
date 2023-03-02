@@ -17,6 +17,10 @@ class BaseLog(ABC):
     def warning(self, *args, **kwargs):
         raise NotImplementedError
 
+    @abstractmethod
+    def error(self, *args, **kwargs):
+        raise NotImplementedError
+
 
 class BasicLog(BaseLog):
     def __init__(self, log_name):
@@ -26,9 +30,9 @@ class BasicLog(BaseLog):
         self.logger.propagete = False
         self.logger.setLevel(logging.INFO)
         self.log_file_path = ''
-        self.set_log_file()
+        self._set_log_file()
 
-    def set_log_file(self):
+    def _set_log_file(self):
         self.log_file_path = self.name + '.log'
         fh = logging.FileHandler(self.log_file_path)
 
@@ -47,3 +51,6 @@ class BasicLog(BaseLog):
 
     def warning(self, *args, **kwargs):
         self.logger.warning(*args, **kwargs)
+
+    def error(self, *args, **kwargs):
+        self.logger.error(*args, **kwargs)

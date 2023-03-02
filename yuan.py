@@ -6,9 +6,9 @@ from colorstr import ColorStr as Co
 from baselog import BasicLog
 
 # define the log class
-MYLOG = BasicLog
 
 class Yuan:
+    MYLOG = BasicLog
     """
     A fundamental recorder for any action
     """
@@ -35,7 +35,7 @@ class Yuan:
         if logger:
             self._logger = logger
         elif log_file_path:
-            self._logger = MYLOG(log_file_path)
+            self._logger = Yuan.MYLOG(log_file_path)
         else:
             assert self._logger, 'Please complete the log file infor: path or logger instance'
             self._using_log = True
@@ -67,7 +67,13 @@ class Yuan:
 
     def log_warning(self, *args, **kwargs):
         if self._using_log:
+            args = [Co.de_format(strings) for strings in args]
             self._logger.warning(*args, **kwargs)
+
+    def log_error(self, *args, **kwargs):
+        if self._using_log:
+            args = [Co.de_format(strings) for strings in args]
+            self._logger.error(*args, **kwargs)
 
     def console_print(self, *args, **kwargs):
         if self._console_print:

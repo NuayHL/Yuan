@@ -46,6 +46,7 @@ class FileManager:
         return self._check(full_file_name)
 
     def check_repeat(self, file_name):
+        assert getori(file_name) == file_name, 'cannot check the file out of this path' #TODO
         ori_name = getori(file_name)
         ext = getext(file_name)
         repeat_idx = 1
