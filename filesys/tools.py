@@ -3,6 +3,9 @@ import os
 def getext(name):
     return os.path.splitext(name)[1]
 
+def getnoext(name):
+    return os.path.splitext(name)[0]
+
 def getbase(name):
     return os.path.basename(name)
 

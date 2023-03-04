@@ -39,19 +39,18 @@ class FileManager:
         os.rename(self._join(file_name), self._join(dst_name))
         return dst_name
 
-    def getpath(self, file_name):
+    def getfullpath(self, file_name):
         return self._join(file_name)
 
     def check(self, full_file_name):
         return self._check(full_file_name)
 
     def check_repeat(self, file_name):
-        assert getori(file_name) == file_name, 'cannot check the file out of this path' #TODO
-        ori_name = getori(file_name)
+        no_ext = getnoext(file_name)
         ext = getext(file_name)
         repeat_idx = 1
-        while file_name in self._all_files:
-            file_name = ori_name + '_%d' % repeat_idx + ext
+        while os.path.exists(self._join(file_name)):
+            file_name = no_ext + '_%d' % repeat_idx + ext
             repeat_idx += 1
         return file_name
 
@@ -94,7 +93,7 @@ class FileManager:
         return os.path.isfile(self._join(name))
 
     def isdir(self, name):
-        return os.path.isfile(self._join(name))
+        return os.path.isdir(self._join(name))
 
     def __str__(self):
         return self._path
