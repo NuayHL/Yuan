@@ -164,28 +164,3 @@ def light_progressbar(percentage, endstr: str = '', barlenth=20):
     print('\r[' + '>' * ilenth + '-' * (barlenth - ilenth) + ']',
           format(percentage * 100, '.1f') + '%', end=' '+endstr)
 
-
-if __name__ == '__main__':
-    a = range(1000)
-    os.environ['SIMPLE_BAR'] = '0'
-
-    # bar = ManualProgressBar(100, prestr='pre_str', endstr='end_str')
-    # for i in a:
-    #     bar.update('i = %s' % i)
-    #     time.sleep(0.02)
-    bar = ManualProgressBar(len(a), prestr='pre_str', endstr='end_str', barstyle=BuiltinStyle.default,
-                            percentage_formate='.1f')
-    for i in a:
-        bar.update('i = %s' % i)
-        time.sleep(0.02)
-    # bar = ManualProgressBar(100, prestr='pre_str', endstr='end_str', barstyle=BuiltinStyle.simple)
-    # for i in a:
-    #     bar.update('i = %s' % i)
-    #     time.sleep(0.02)
-
-    # This is a test commit
-
-
-
-
-
