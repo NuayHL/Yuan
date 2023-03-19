@@ -1,16 +1,16 @@
 # -*- coding: UTF-8 -*-
 import os
 from collections.abc import Iterable
-from progressbar.barstyle import BuiltinStyle, SimpleStyle
-from progressbar.components import FormatBarPrint
+from progressbar.barstyle import BuiltinStyle
+from progressbar.components import FormatBarSelect
 from timer import Timer
-import time
+import warnings
 
 os.environ['SIMPLE_BAR'] = '0'
 
 class IterProgressBar:
     def __init__(self, iters, max_iter=None, barlenth=20, endstr='', prestr='',
-                 percentage_formate=None, eta_on=True, simplebar=False,
+                 percentage_formate=None, eta_on=True, simplebar=False, threadbar=True,
                  colored=True, barstyle = BuiltinStyle.default):
         self._count = -1
         self._max_iter = 0
@@ -21,11 +21,8 @@ class IterProgressBar:
         self._update_str = ''
         self._count_eta = eta_on
 
-        if simplebar or os.getenv('SIMPLE_BAR') == '1':
-            barstyle = SimpleStyle
-            colored = False
-        self._GenBar = FormatBarPrint(barlenth=barlenth, percentage_formate=percentage_formate,
-                                      colored=colored, barstyle=barstyle)
+        self._GenBar = FormatBarSelect(barlenth=barlenth, simplebar=simplebar, threadbar=threadbar, percentage_formate=percentage_formate,
+                                       colored=colored, barstyle=barstyle)
 
         if self._count_eta:
             self._timer = Timer()
@@ -68,7 +65,7 @@ class IterProgressBar:
         else:
             raise NotImplementedError
 
-    def write(self, strs: str):
+    def update(self, strs: str=''):
         self._update_str = strs
 
     def stat(self):
@@ -101,7 +98,7 @@ class IterProgressBar:
 
 class ManualProgressBar:
     def __init__(self, max_iter, barlenth=20, endstr='', prestr='',
-                 percentage_formate=None, eta_on=True, simplebar=False,
+                 percentage_formate=None, eta_on=True, simplebar=False,threadbar=True,
                  colored=True, barstyle = BuiltinStyle.default):
         self._count = 0
         self._max_iter = 0
@@ -109,23 +106,28 @@ class ManualProgressBar:
         self._pre = prestr
         self._stop = False
         self._count_eta = eta_on
-        if simplebar or os.getenv('SIMPLE_BAR') == '1':
-            barstyle = SimpleStyle
-            colored = False
-        self._GenBar = FormatBarPrint(barlenth=barlenth, percentage_formate=percentage_formate,
-                                      colored=colored, barstyle=barstyle)
+        self._GenBar = FormatBarSelect(barlenth=barlenth, simplebar=simplebar, threadbar=threadbar, percentage_formate=percentage_formate,
+                                       colored=colored, barstyle=barstyle)
 
         if self._count_eta:
             self._timer = Timer()
-
-        assert isinstance(max_iter, int) and max_iter > 0
-        self._max_iter = max_iter
+        if isinstance(max_iter, int):
+            self._max_iter = max_iter
+        elif hasattr(max_iter, '__len__'):
+            self._max_iter = len(max_iter)
+        else:
+            raise Exception('\'max_iter\' must be int or a type with __len__')
+        assert self._max_iter > 0, 'max_iter = 0 or len(max_iter) = 0: The input max_iter must not be 0 or 0 lenth'
 
     def stat(self):
         if self._count_eta and self._stop:
             return self._timer
 
-    def update(self, write='', step: int = 1):
+    def update(self, strs: str='', step: int = 1):
+        if self._stop:
+            warnings.warn('This Manualbar has closed, but still being updated!')
+            return
+        
         if self._count_eta:
             if self._count == 0:
                 self._timer.start()
@@ -136,13 +138,10 @@ class ManualProgressBar:
         else:
             period_time = None
 
-        if self._stop:
-            return
-
         self._count += step
 
         if self._count >= self._max_iter:
-            write += '\n'
+            strs += '\n'
             self._stop = True
 
         if period_time:
@@ -155,7 +154,7 @@ class ManualProgressBar:
             counts_eta = ''
 
         self._GenBar.print(self._count, self._max_iter, const_prestr=self._pre, const_endstr=self._end,
-                           eta=counts_eta, endstr=write)
+                           eta=counts_eta, endstr=strs)
 
 
 def light_progressbar(percentage, endstr: str = '', barlenth=20):

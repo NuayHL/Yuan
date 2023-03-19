@@ -1,3 +1,4 @@
+import os
 import abc
 import threading
 from abc import ABC
@@ -5,18 +6,22 @@ from .barstyle import BuiltinStyle
 from timer import Timer
 import time
 from queue import Queue
-
-
+from progressbar.barstyle import BuiltinStyle, SimpleStyle
 
 class LinePrints(ABC):
     @abc.abstractmethod
     def print(self, *args, **kwargs):
         pass
 
-def FormatBarSelect(colored=True, simple=False, threadbar=False, barstyle=None):
-    if simple:
-        return SimpleBar
-
+def FormatBarSelect(barlenth=20, percentage_formate='.1f', simplebar=False, threadbar=False,
+                                      colored=True, barstyle=None):
+    if simplebar or os.getenv('SIMPLE_BAR') == '1':
+        return SimpleBar(barlenth=barlenth, percentage_formate=percentage_formate, barstyle=SimpleStyle)
+    if threadbar or barstyle.barformat.smooth == 3:
+        _bar = ThreadBar
+    else:
+        _bar = DefaultBar
+    return _bar(barlenth=barlenth, percentage_formate=percentage_formate, colored=colored, barstyle=barstyle)
 
 class SimpleBar(LinePrints):
     def __init__(self, barlenth=20, percentage_formate='.1f', barstyle=None):
@@ -50,7 +55,7 @@ class SimpleBar(LinePrints):
         print(finstr, end=endstr)
 
 class DefaultBar(LinePrints):
-    def __init__(self,  barlenth=20, percentage_formate='.1f', colored=True,  barstyle=None):
+    def __init__(self, barlenth=20, percentage_formate='.1f', colored=True,  barstyle=None):
         self.bl = barlenth
         self.barstyle = barstyle
         barstyle_color = barstyle.barcolor if barstyle else None
@@ -124,7 +129,7 @@ class DefaultBar(LinePrints):
         print(fullbar, end=endstr)
 
 class ThreadBar(DefaultBar):
-    def __init__(self,  barlenth=20, percentage_formate='.1f', colored=True, barstyle=BuiltinStyle.default):
+    def __init__(self, barlenth=20, percentage_formate='.1f', colored=True, barstyle=BuiltinStyle.default):
         super().__init__()
         self.bl = barlenth
         self.colored = colored and barstyle.barcolor
@@ -205,7 +210,7 @@ class ThreadBar(DefaultBar):
                 self.queue.put((const_prestr, percentage_str, percentage, const_endstr, eta, endstr))
         return
 
-
+# old bar print
 class FormatBarPrint:
     def __init__(self, barlenth=20, percentage_formate='.1f', colored=True, barstyle=BuiltinStyle.default):
         self.bl = barlenth
