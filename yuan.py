@@ -24,6 +24,13 @@ class Yuan:
         else:
             self.log_off()
 
+    def on(self):
+        self.console_on()
+        try:
+            self.log_on()
+        except:
+            self.warning('Your have not set main log, consider using \'self.console_on()\' instead of \'self.on()\'')
+
     def console_off(self):
         self._console_print = False
 
@@ -31,7 +38,6 @@ class Yuan:
         self._console_print = True
 
     def log_on(self, log_file_path='', logger: MYLOG = None):
-        self._using_log = True
         if logger:
             self._logger = logger
         elif log_file_path:
@@ -40,6 +46,7 @@ class Yuan:
             assert self._logger, 'Please complete the log file infor: path or logger instance'
             self._using_log = True
             self.warning('--LOG ON--')
+        self._using_log = True
 
     def log_off(self):
         self._using_log = False
