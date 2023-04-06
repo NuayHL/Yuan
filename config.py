@@ -1,68 +1,127 @@
+import warnings
 import yaml
-import os
-from yacs.config import CfgNode as _CN
-from copy import deepcopy
 
-class Config(_CN):
-    def dump_to_file_yaml(self, yaml_name=None, path=''):
-        cfg_string = self.dump()
-        if yaml_name is None:
-            assert hasattr(self, 'exp_name'), 'please give the yaml file name since the config ' \
-                                              'seems not has the attr \'exp_name\''
-            file_name = self.exp_name
+class ProhibitKeys:
+    def __get__(self, instance, owner):
+        return [k for k in dir(instance) if not k.startswith('_')]
+
+class DictConfig(dict):
+    builtin_keys = ProhibitKeys()
+
+    def __init__(self, *config_dicts):
+        super().__init__()
+        for config_dict in config_dicts:
+            assert isinstance(config_dict, dict), 'The input configs must be \'dict\' type.'
+            for key, val in config_dict.items():
+                self._check_builtin_keys(key)
+                self[key] = self._hook(val)
+
+    def _hook(self, value):
+        if isinstance(value, dict):
+            return DictConfig(value)
+        return value
+
+    def _check_builtin_keys(self, key):
+        assert key not in self.builtin_keys, 'The key \'%s\' is in the builtin name, please change a key name' % key
+
+    def __getattr__(self, item):
+        return self[item]
+
+    def update(self, dicts_like=None, **other_keys):
+        if isinstance(dicts_like, dict):
+            if not isinstance(dicts_like, DictConfig):
+                dicts_like = DictConfig(dicts_like)
+            other_keys = DictConfig(other_keys)
+            dict.update(dicts_like, other_keys)
         else:
-            file_name = yaml_name
-        with open(os.path.join(path,file_name + '.yaml'), "w") as f:
-            f.write(cfg_string)
+            if dicts_like is not None:
+                warnings.warn('the type of the given variable for update is not \'dict\' or \'DictConfig\', ignored')
+            dicts_like = DictConfig(other_keys)
+        for k, v in dicts_like.items():
+            self._check_builtin_keys(k)
+            self[k] = v
 
-    def dump_to_file(self, yaml_name=None, path=''):
-        if yaml_name is None:
-            assert hasattr(self, 'exp_name')
-            file_name = self.exp_name
+    def update_strict(self, dicts_like=None, **other_keys):
+        if isinstance(dicts_like, dict):
+            if not isinstance(dicts_like, DictConfig):
+                dicts_like = DictConfig(dicts_like)
         else:
-            file_name = yaml_name
-        with open(os.path.join(path,file_name + '.yaml'), "w") as f:
-            print(self, file=f)
+            if dicts_like is not None:
+                warnings.warn('the type of the given variable for update is not \'dict\' or \'DictConfig\', ignored')
+        dicts_like.update(other_keys)
+        for k, v in dicts_like.items():
+            assert k in self.keys(), 'The update_strict() only allows to update the existing key-values, ' \
+                                     'add new keys is prohibited. key %s dose not exist.' % k
+            assert isinstance(v, DictConfig) == isinstance(self[k], DictConfig), \
+                'The update_strict() only allows to update the existing key-values, add or del new keys ' \
+                'are prohibited. key %s is a node/leaf, but change to leaf/node' % k
+            if isinstance(v, DictConfig):
+                self[k].update_strict(v)
+            else:
+                self[k] = v
 
-    def dump_to_split_file(self, yaml_name=None, path='', split_keys=[]):
-        index = 1
-        fin_path = deepcopy(path)
-        if os.path.exists(path):
-            fin_path = path + '_%d' % index
-            index += 1
-        if not os.path.exists(fin_path):
-            os.makedirs(fin_path)
-        if yaml_name is None:
-            assert hasattr(self, 'exp_name')
-            file_name = self.exp_name
-        else:
-            file_name = yaml_name
-        for key in split_keys:
-            self.dump_key(key, file_name, fin_path)
-        self.dump_except_key(split_keys, file_name, fin_path)
+    def dump_to_dict(self):
+        output_dict = dict()
+        for k, v in self.items():
+            if isinstance(v, DictConfig):
+                output_dict[k] = v.dump_to_dict()
+            else:
+                output_dict[k] = v
+        return output_dict
 
-    def merge_from_files(self, file_path):
-        if '.yaml' in file_path:
-            self.merge_from_file(file_path)
-        elif os.path.exists(file_path):
-            cfg_files = os.listdir(file_path)
-            for cfg in cfg_files:
-                if '.yaml' not in cfg: continue
-                self.merge_from_file(os.path.join(file_path, cfg))
-        else:
-            print(file_path)
-            raise FileNotFoundError('Config path not exists')
+    def __str__(self):
+        def make_indent(in_str, num_spaces):
+            s = in_str.split("\n")
+            if len(s) == 1:
+                return in_str
+            first = s.pop(0)
+            s = [(num_spaces * " ") + line for line in s]
+            s = "\n".join(s)
+            s = first + "\n" + s
+            return s
 
-    def dump_key(self, key, file_name, path=''):
-        if not hasattr(self, key):
-            raise AttributeError
-        dummy_cn = Config()
-        dummy_cn.__setattr__(key,deepcopy(self.__getattr__(key)))
-        dummy_cn.dump_to_file(file_name + '_'+key, path)
+        r = ""
+        s = []
+        for k, v in self.items():
+            seperator = "\n" if isinstance(v, DictConfig) else " "
+            attr_str = "{}:{}{}".format(str(k), seperator, str(v))
+            attr_str = make_indent(attr_str, 2)
+            s.append(attr_str)
+        r += "\n".join(s)
+        return r
 
-    def dump_except_key(self, keys, file_name, path=''):
-        dummy_cn = Config()
-        for key in self.keys():
-            if key not in keys:
-                dummy_cn.__setattr__(key, deepcopy(self.__getattr__(key)))
-        dummy_cn.dump_to_file(file_name + '_else', path)
+class Config(DictConfig):
+    def __init__(self, *configs, **direct_keys):
+        dict_list = list()
+        for config in configs:
+            if isinstance(config, str):
+                if _is_yaml_file(config):
+                    dict_list.append(_read_from_yaml(config))
+                raise Exception('unknown type of config file, currently supported: yaml')
+            elif isinstance(config, dict):
+                dict_list.append(config)
+            else:
+                raise Exception('unknown type of config, currently supported: type(dict), file(.yaml)')
+        dict_list.append(direct_keys)
+        super().__init__(*dict_list)
+
+    def dump_to_yaml(self, filename):
+        with open(filename + '.yaml', 'w') as f:
+            print(str(self), file=f)
+
+    def update_from_yamls(self, *yamlfiles):
+        for file in yamlfiles:
+            with open(file, 'r') as f:
+                conf_dict = yaml.safe_load(f)
+                self.update(conf_dict)
+
+
+def _is_yaml_file(filename):
+    return filename.endswith(('.yml', '.yaml'))
+
+def _read_from_yaml(filename):
+    with open(filename, 'r') as f:
+        dicts = yaml.safe_load(f)
+    return dicts
+
+
