@@ -3,7 +3,7 @@ import yaml
 
 class ProhibitKeys:
     def __get__(self, instance, owner):
-        return [k for k in dir(instance) if not k.startswith('_')]
+        return [k for k in dir(instance) if not k.startswith('_')] + ['dicts_like']
 
 class DictConfig(dict):
     builtin_keys = ProhibitKeys()
@@ -71,14 +71,14 @@ class DictConfig(dict):
 
     def __str__(self):
         def make_indent(in_str, num_spaces):
-            s = in_str.split("\n")
-            if len(s) == 1:
+            format_str = in_str.split("\n")
+            if len(format_str) == 1:
                 return in_str
-            first = s.pop(0)
-            s = [(num_spaces * " ") + line for line in s]
-            s = "\n".join(s)
-            s = first + "\n" + s
-            return s
+            first = format_str.pop(0)
+            format_str = [(num_spaces * " ") + line for line in format_str]
+            format_str = "\n".join(format_str)
+            format_str = first + "\n" + format_str
+            return format_str
 
         r = ""
         s = []
