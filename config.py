@@ -7,7 +7,8 @@ class Config(_CN):
     def dump_to_file_yaml(self, yaml_name=None, path=''):
         cfg_string = self.dump()
         if yaml_name is None:
-            assert hasattr(self, 'exp_name')
+            assert hasattr(self, 'exp_name'), 'please give the yaml file name since the config ' \
+                                              'seems not has the attr \'exp_name\''
             file_name = self.exp_name
         else:
             file_name = yaml_name
