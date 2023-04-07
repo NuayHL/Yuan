@@ -60,11 +60,18 @@ class DictConfig(dict):
             else:
                 self[k] = v
 
-    def dump_to_dict(self):
+    def dump_to_dict(self, exclude=None):
+        if exclude:
+            if isinstance(exclude, str):
+                exclude = [exclude]
+            assert isinstance(exclude, list), 'exclude list must be one str key or a list of str key'
         output_dict = dict()
         for k, v in self.items():
+            if exclude:
+                if k in exclude:
+                    continue
             if isinstance(v, DictConfig):
-                output_dict[k] = v.dump_to_dict()
+                output_dict[k] = v.dump_to_dict(exclude=exclude)
             else:
                 output_dict[k] = v
         return output_dict

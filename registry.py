@@ -17,7 +17,10 @@ class Registry:
         self._dict[key] = value
 
     def __getitem__(self, key):
-        return self._dict[key]
+        if key in self:
+            return self._dict[key]
+        else:
+            raise NotImplementedError('Can not find \'%s\' in [%s] registry' % (key, self._name))
 
     def __contains__(self, key):
         return key in self._dict.keys()
