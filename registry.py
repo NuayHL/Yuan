@@ -2,10 +2,16 @@ import os
 from warnings import warn
 
 class Registry:
+    _All_Registry = dict()
     def __init__(self, name):
         assert isinstance(name, str)
         self._name = name
         self._dict = dict()
+        Registry._All_Registry[self._name] = self
+
+    @classmethod
+    def get_registry(cls, name):
+        return cls._All_Registry[name]
 
     def __setitem__(self, key, value):
         self._dict[key] = value
@@ -42,10 +48,5 @@ class Registry:
     def items(self):
         return self._dict.items()
 
-
-def load_modules(parent_module, init_file):
-    list_file = os.listdir(os.path.dirname(init_file))
-    list_file = [os.path.splitext(filename)[0] for filename in list_file if
-                 not filename.startswith(('_', '.', 'build'))]
-    for file in list_file:
-        __import__('%s.%s' %(parent_module, file))
+    def __str__(self):
+        return str(self._dict)
