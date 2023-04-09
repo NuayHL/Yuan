@@ -6,9 +6,6 @@ import sys
 
 
 class BaseLog(ABC):
-    def __init__(self, log_name):
-        pass
-
     @abstractmethod
     def info(self, *args, **kwargs):
         raise NotImplementedError
@@ -23,18 +20,18 @@ class BaseLog(ABC):
 
 
 class BasicLog(BaseLog):
-    def __init__(self, log_name):
-        super(BasicLog, self).__init__(log_name)
+    def __init__(self, log_name, log_dir_path=''):
         self.name = log_name
+        self.log_dir_path = log_dir_path
         self.logger = logging.getLogger(log_name)
         self.logger.propagete = False
         self.logger.setLevel(logging.INFO)
-        self.log_file_path = ''
+        self.log_path = ''
         self._set_log_file()
 
     def _set_log_file(self):
-        self.log_file_path = self.name + '.log'
-        fh = logging.FileHandler(self.log_file_path)
+        self.log_path = os.path.join(self.log_dir_path, self.name + '.log')
+        fh = logging.FileHandler(self.log_path)
 
         def _utc8_aera(timestamp):
             now = datetime.datetime.utcfromtimestamp(timestamp) + datetime.timedelta(hours=8)

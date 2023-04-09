@@ -37,11 +37,11 @@ class Yuan:
     def console_on(self):
         self._console_print = True
 
-    def log_on(self, log_name, log_file_path='', logger: MYLOG = None):
+    def log_on(self, log_name, log_dir_path='', logger: MYLOG = None):
         if logger:
             self._logger = logger
-        elif log_file_path:
-            self._logger = Yuan.MYLOG(log_file_path=log_file_path)
+        elif log_dir_path:
+            self._logger = Yuan.MYLOG(log_name=log_name, log_dir_path=log_dir_path)
         else:
             assert self._logger, 'Please complete the log file infor: path or logger instance'
             self._using_log = True
