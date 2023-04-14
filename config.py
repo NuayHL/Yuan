@@ -104,13 +104,19 @@ class Config(DictConfig):
             if isinstance(config, str):
                 if _is_yaml_file(config):
                     dict_list.append(_read_from_yaml(config))
-                raise Exception('unknown type of config file, currently supported: yaml')
+                else:
+                    raise Exception('unknown type of config file, currently supported: yaml')
             elif isinstance(config, dict):
                 dict_list.append(config)
             else:
                 raise Exception('unknown type of config, currently supported: type(dict), file(.yaml)')
         dict_list.append(direct_keys)
         super().__init__(*dict_list)
+
+    def _hook(self, value):
+        if isinstance(value, dict):
+            return Config(value)
+        return value
 
     def dump_to_yaml(self, filename):
         with open(filename + '.yaml', 'w') as f:
@@ -121,6 +127,28 @@ class Config(DictConfig):
             with open(file, 'r') as f:
                 conf_dict = yaml.safe_load(f)
                 self.update(conf_dict)
+
+    def find_key_value(self, key):
+        """return all the node value which has the key name. If the node is a Config, return True"""
+        key_dict = dict()
+        for k, v in self.items():
+            if k == key:
+                if not isinstance(v, Config):
+                    key_dict[k] = v
+                else:
+                    key_dict[k] = True
+            if isinstance(v, Config):
+                _key_dict = v.find_key_value(key)
+                _key_dict = self._update_key_dict(k, _key_dict)
+                key_dict.update(_key_dict)
+        return key_dict
+
+    @staticmethod
+    def _update_key_dict(pre_key: str, key_dict: dict):
+        fin_key_dict = dict()
+        for k, v in key_dict.items():
+            fin_key_dict[pre_key+'.'+k] = key_dict[k]
+        return fin_key_dict
 
 
 def _is_yaml_file(filename):
