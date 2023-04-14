@@ -20,7 +20,7 @@ class Registry:
         if key in self:
             return self._dict[key]
         else:
-            raise NotImplementedError('Can not find \'%s\' in [%s] registry' % (key, self._name))
+            raise NotImplementedError('Can not find \'%s\' in \'%s\' registry' % (key, self._name))
 
     def __contains__(self, key):
         return key in self._dict.keys()
