@@ -1,5 +1,6 @@
 import warnings
 import yaml
+import ast
 
 class ProhibitKeys:
     def __get__(self, instance, owner):
@@ -102,14 +103,11 @@ class Config(DictConfig):
         dict_list = list()
         for config in configs:
             if isinstance(config, str):
-                if _is_yaml_file(config):
-                    dict_list.append(_read_from_yaml(config))
-                else:
-                    raise Exception('unknown type of config file, currently supported: yaml')
+                dict_list.append(self._file_to_dict(config))
             elif isinstance(config, dict):
                 dict_list.append(config)
             else:
-                raise Exception('unknown type of config, currently supported: type(dict), file(.yaml)')
+                raise Exception('unknown type of config, currently supported: type(dict), file(.yaml), file(.py)')
         dict_list.append(direct_keys)
         super().__init__(*dict_list)
 
@@ -122,11 +120,20 @@ class Config(DictConfig):
         with open(filename + '.yaml', 'w') as f:
             print(str(self), file=f)
 
-    def update_from_yamls(self, *yamlfiles):
-        for file in yamlfiles:
-            with open(file, 'r') as f:
-                conf_dict = yaml.safe_load(f)
-                self.update(conf_dict)
+    def update_from_files(self, *files):
+        for file in files:
+            temp_dict = self._file_to_dict(file)
+            self.update(temp_dict)
+
+    @staticmethod
+    def _file_to_dict(filename):
+        if _is_yaml_file(filename):
+            fin_dict = _read_from_yaml(filename)
+        elif _is_py_file(filename):
+            fin_dict = _read_from_py(filename)
+        else:
+            raise Exception('unknown type of config file, currently supported: yaml, py')
+        return fin_dict
 
     def find_key_value(self, key):
         """return all the node value which has the key name. If the node is a Config, return True"""
@@ -158,5 +165,23 @@ def _read_from_yaml(filename):
     with open(filename, 'r') as f:
         dicts = yaml.safe_load(f)
     return dicts
+
+def _is_py_file(filename):
+    return filename.endswith('.py')
+
+def _read_from_py(filename):
+    with open(filename, encoding='utf-8') as f:
+        codes = ast.parse(f.read())
+    codeobj = compile(codes, '', mode='exec')
+    # Support load global variable in nested function of the
+    # config.
+    global_locals_var = dict()
+    eval(codeobj, global_locals_var, global_locals_var)
+    global_locals_var = global_locals_var['config']
+    fin_dict = {
+        key: value
+        for key, value in global_locals_var.items()
+    }
+    return fin_dict
 
 
