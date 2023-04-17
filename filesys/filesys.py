@@ -1,3 +1,4 @@
+import os
 import shutil
 from collections import defaultdict
 
@@ -12,6 +13,9 @@ class FileManager:
         self._num_files = len(self)
 
         self.cache = defaultdict(lambda x: False)
+
+    def mkdirs(self, dir_name):
+        os.makedirs(self._join(dir_name))
 
     def remove(self, file_name):
         assert self._check_free(file_name), 'Not allowed to remove other files during iteration'

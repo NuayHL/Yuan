@@ -69,18 +69,21 @@ class Yuan:
 
     def log_info(self, *args, **kwargs):
         if self._using_log:
-            args = [Co.de_format(strings) for strings in args]
-            self._logger.info(*args, **kwargs)
+            args = [Co.de_format(str(strings)) for strings in args]
+            args = ' '.join(args)
+            self._logger.info(args, **kwargs)
 
     def log_warning(self, *args, **kwargs):
         if self._using_log:
-            args = [Co.de_format(strings) for strings in args]
-            self._logger.warning(*args, **kwargs)
+            args = [Co.de_format(str(strings)) for strings in args]
+            args = ' '.join(args)
+            self._logger.warning( args, **kwargs)
 
     def log_error(self, *args, **kwargs):
         if self._using_log:
-            args = [Co.de_format(strings) for strings in args]
-            self._logger.error(*args, **kwargs)
+            args = [Co.de_format(str(strings)) for strings in args]
+            args = ' '.join(args)
+            self._logger.error(args, **kwargs)
 
     def console_print(self, *args, **kwargs):
         if self._console_print:
