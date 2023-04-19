@@ -1,6 +1,7 @@
 import warnings
 import yaml
 import ast
+from copy import deepcopy
 
 class ProhibitKeys:
     def __get__(self, instance, owner):
@@ -27,6 +28,26 @@ class DictConfig(dict):
 
     def __getattr__(self, item):
         return self[item]
+
+    def __deepcopy__(self, memo=None, _nil=[]):
+        if memo is None:
+            memo = {}
+        d = id(self)
+        y = memo.get(d, _nil)
+        if y is not _nil:
+            return y
+        copy_dict = DictConfig()
+        memo[d] = id(copy_dict)
+        for key in self.keys():
+            copy_dict.__setattr__(deepcopy(key, memo), deepcopy(self.__getattr__(key), memo))
+        return copy_dict
+
+    # for multiprocessing or multithreading
+    def __getstate__(self):
+        return self.__dict__.copy()
+
+    def __setstate__(self, state):
+        self.__dict__.update(state)
 
     def update(self, dicts_like=None, **other_keys):
         if isinstance(dicts_like, dict):
