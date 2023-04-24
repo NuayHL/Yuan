@@ -29,6 +29,9 @@ class DictConfig(dict):
     def __getattr__(self, item):
         return self[item]
 
+    def __setattr__(self, key, value):
+        self[key] = value
+
     def __deepcopy__(self, memo=None, _nil=[]):
         if memo is None:
             memo = {}
