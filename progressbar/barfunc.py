@@ -65,7 +65,7 @@ class IterProgressBar:
         else:
             raise NotImplementedError
 
-    def update(self, strs: str=''):
+    def update(self, strs: str = ''):
         self._update_str = strs
 
     def stat(self):
@@ -123,7 +123,7 @@ class ManualProgressBar:
         if self._count_eta and self._stop:
             return self._timer
 
-    def update(self, strs: str='', step: int = 1):
+    def update(self, strs: str = '', step: int = 1):
         if self._stop:
             warnings.warn('This Manualbar has closed, but still being updated!')
             return

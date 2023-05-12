@@ -1,5 +1,5 @@
 # YUAN 
-### An Advanced Experiment Platform
+### Provided Simple Tools for Experiment Programming
 
 #### 1. Recorder: `Yuan`
 ```python
