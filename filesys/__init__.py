@@ -1,4 +1,4 @@
-from filesys.filesys import FileManager
+from .filesys import FileManager
 
 __all__ = ['FileManager']
 
