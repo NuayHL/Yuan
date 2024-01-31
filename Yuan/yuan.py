@@ -2,8 +2,8 @@ import os
 import sys
 import warnings
 
-from colorstr import ColorStr as Co
-from baselog import BasicLog
+from Yuan.colorstr import ColorStr as Co
+from Yuan.baselog import BasicLog
 
 # define the log class
 

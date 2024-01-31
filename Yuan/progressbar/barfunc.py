@@ -3,7 +3,7 @@ import os
 from collections.abc import Iterable
 from progressbar.barstyle import BuiltinStyle
 from progressbar.components import FormatBarSelect
-from timer import Timer
+from Yuan.timer import Timer
 import warnings
 
 os.environ['SIMPLE_BAR'] = '0'
