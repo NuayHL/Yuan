@@ -1,5 +1,5 @@
-from progressbar.barfunc import ManualProgressBar, IterProgressBar, light_progressbar
-from progressbar.barstyle import DefaultStyle, SimpleStyle, BuiltinStyle, styleCreator
+from .barfunc import ManualProgressBar, IterProgressBar, light_progressbar
+from .barstyle import DefaultStyle, SimpleStyle, BuiltinStyle, styleCreator
 
 __all__ = ['ManualProgressBar',
            'IterProgressBar',

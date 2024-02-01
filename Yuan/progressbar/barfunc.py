@@ -1,8 +1,8 @@
 # -*- coding: UTF-8 -*-
 import os
 from collections.abc import Iterable
-from progressbar.barstyle import BuiltinStyle
-from progressbar.components import FormatBarSelect
+from .barstyle import BuiltinStyle
+from .components import FormatBarSelect
 from Yuan.timer import Timer
 import warnings
 

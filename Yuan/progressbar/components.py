@@ -3,10 +3,10 @@ import abc
 import threading
 from abc import ABC
 from .barstyle import BuiltinStyle
-from timer import Timer
+from Yuan.timer import Timer
 import time
 from queue import Queue
-from progressbar.barstyle import BuiltinStyle, SimpleStyle
+from .barstyle import BuiltinStyle, SimpleStyle
 
 class LinePrints(ABC):
     @abc.abstractmethod
