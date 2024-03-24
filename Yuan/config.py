@@ -55,6 +55,35 @@ class DictConfig(dict):
         self.__dict__.update(state)
 
     def update(self, dicts_like=None, **other_keys):
+        dicts_like = self._gather_dicts(dicts_like=dicts_like, **other_keys)
+        for k, v in dicts_like.items():
+            self._check_builtin_keys(k)
+            self[k] = v
+
+    def update_compatible(self, dicts_like=None, **other_keys):
+        dicts_like = self._gather_dicts(dicts_like=dicts_like, **other_keys)
+        for k, v in dicts_like.items():
+            if isinstance(v, dict) and k in self.keys():
+                self[k].update_compatible(v)
+            else:
+                self._check_builtin_keys(k)
+                self[k] = v
+
+    def update_strict(self, dicts_like=None, **other_keys):
+        dicts_like = self._gather_dicts(dicts_like=dicts_like, **other_keys)
+        for k, v in dicts_like.items():
+            assert k in self.keys(), 'The update_strict() only allows to update the existing key-values, ' \
+                                     'adding new keys is prohibited. key \'%s\' does not exist.' % k
+            assert isinstance(v, DictConfig) == isinstance(self[k], DictConfig), \
+                'The update_strict() only allows to update the existing key-values, adding or deleting new keys '\
+                'are prohibited. key \'%s\' is a node/leaf, but changes to leaf/node' % k
+            if isinstance(v, DictConfig):
+                self[k].update_strict(v)
+            else:
+                self[k] = v
+
+    @staticmethod
+    def _gather_dicts(dicts_like, **other_keys):
         if isinstance(dicts_like, dict):
             if not isinstance(dicts_like, DictConfig):
                 dicts_like = DictConfig(dicts_like)
@@ -64,28 +93,7 @@ class DictConfig(dict):
             if dicts_like is not None:
                 warnings.warn('the type of the given variable for update is not \'dict\' or \'DictConfig\', ignored')
             dicts_like = DictConfig(other_keys)
-        for k, v in dicts_like.items():
-            self._check_builtin_keys(k)
-            self[k] = v
-
-    def update_strict(self, dicts_like=None, **other_keys):
-        if isinstance(dicts_like, dict):
-            if not isinstance(dicts_like, DictConfig):
-                dicts_like = DictConfig(dicts_like)
-        else:
-            if dicts_like is not None:
-                warnings.warn('the type of the given variable for update is not \'dict\' or \'DictConfig\', ignored')
-        dicts_like.update(other_keys)
-        for k, v in dicts_like.items():
-            assert k in self.keys(), 'The update_strict() only allows to update the existing key-values, ' \
-                                     'add new keys is prohibited. key %s does not exist.' % k
-            assert isinstance(v, DictConfig) == isinstance(self[k], DictConfig), \
-                'The update_strict() only allows to update the existing key-values, add or del new keys ' \
-                'are prohibited. key %s is a node/leaf, but change to leaf/node' % k
-            if isinstance(v, DictConfig):
-                self[k].update_strict(v)
-            else:
-                self[k] = v
+        return dicts_like
 
     def dump_to_dict(self, exclude=None):
         if exclude:
@@ -129,7 +137,7 @@ class Config(DictConfig):
         dict_list = list()
         for config in configs:
             if isinstance(config, str):
-                dict_list.extend(self._file_to_dict(config))
+                dict_list.append(self._file_to_dict(config))
             elif isinstance(config, dict):
                 dict_list.append(config)
             else:
@@ -146,18 +154,26 @@ class Config(DictConfig):
         with open(filename + '.yaml', 'w') as f:
             print(str(self), file=f)
 
-    def update_from_files(self, *files, strict=True):
+    def update_from_files(self, *files, type='compatible'):
         for file in files:
-            temp_dict_list = self._file_to_dict(file)
-            for temp_dict in temp_dict_list:
-                if strict:
-                    self.update_strict(temp_dict)
-                else:
-                    self.update(temp_dict)
+            temp_dict = self._file_to_dict(file)
+            if type == 'compatible':
+                self.update_compatible(temp_dict)
+            elif type == 'strict':
+                self.update_strict(temp_dict)
+            elif type == 'default':
+                self.update(temp_dict)
+            else:
+                raise Exception('updata type should be in [deault, compatiable, strict], received \'%s\'' % type)
+
+    # @staticmethod
+    # def _file_to_dict(filename):
+    #     return _Config_File_IO.read(filename)
 
     @staticmethod
     def _file_to_dict(filename):
-        return _Config_File_IO.read(filename)
+        config_tree = _Config_File_IO.read(filename)
+        return config_tree.generate()
 
     def find_key_value(self, key):
         """return all the node value which has the key name. If the node is a Config, return True"""
@@ -182,9 +198,44 @@ class Config(DictConfig):
         return fin_key_dict
 
 
+_MAIN_CONFIG_KEY = 'config'
+_EXTRA_CONFIG_KEY = '_extra_'
+_BASE_CONFIG_KEY = '_base_'
+_CONFIG_PATH_KEY = '_path_'
+_CONFIG_TYPE_KEY = '_type_'
+
+from pathlib import Path
+class ConfigTree:
+    def __init__(self, config_dict, base_list, extra_list):
+        self._dict = config_dict
+        self._base = base_list
+        self._extra = extra_list
+
+    def generate(self):
+        fin_dict = DictConfig(self._dict)
+        for node in self._base:
+            _type = node['update_type']
+            _base_node = node['node'].generate()
+            if _type == 'default':
+                _base_node.update(fin_dict)
+            elif _type == 'compatible':
+                _base_node.update_compatible(fin_dict)
+            elif _type == 'strict':
+                _base_node.update_strict(fin_dict)
+            fin_dict = _base_node
+        for node in self._extra:
+            _type = node['update_type']
+            if _type == 'default':
+                fin_dict.update(node['node'].generate())
+            elif _type == 'compatible':
+                fin_dict.update_compatible(node['node'].generate())
+            elif _type == 'strict':
+                fin_dict.update_strict(node['node'].generate())
+        return fin_dict
+
 class _Config_File_IO:
     @classmethod
-    def read(cls, filename):
+    def read(cls, filename, incoming_filename: Path=None, from_node=None):
         _read_func = None
         if _is_yaml_file(filename):
             _read_func = _read_from_yaml
@@ -192,16 +243,31 @@ class _Config_File_IO:
             _read_func = _read_from_py
         else:
             raise Exception(f'Cannot load unknown type file "{filename}" to config')
-        _temp_dicts, config_files_list = _read_func(filename)
-        current_path = os.path.dirname(filename)
-        dict_list = [_temp_dicts]
-        for config_file in config_files_list:
-            dict_list.extend(cls.read(os.path.join(current_path, config_file)))
-        return dict_list
+        _temp_dict, _extra_files, _base_files = _read_func(filename)
 
-
-_MAIN_CONFIG_KEY = 'config'
-_EXTRA_CONFIG_KEY = '_extra_'
+        current_dir = os.path.dirname(filename)
+        current_file = Path(filename).resolve()
+        extra_dict_list = list()
+        base_dict_list = list()
+        for extra_dict in _extra_files:
+            _target_file = Path(os.path.join(current_dir, extra_dict[_CONFIG_PATH_KEY])).resolve()
+            if from_node == 'base' and _target_file == incoming_filename:
+                warnings.warn(f'Cycle citation happened between {current_file} and {_target_file}')
+                continue
+            extra_dict_list.append(dict(node=_Config_File_IO.read(filename=str(_target_file),
+                                                                  incoming_filename=current_file,
+                                                                  from_node='extra'),
+                                        update_type=extra_dict[_CONFIG_TYPE_KEY]))
+        for base_dict in _base_files:
+            _target_file = Path(os.path.join(current_dir, base_dict[_CONFIG_PATH_KEY])).resolve()
+            if from_node == 'extra' and _target_file == incoming_filename:
+                warnings.warn(f'Cycle citation happened between {current_file} and {_target_file}')
+                continue
+            base_dict_list.append(dict(node=_Config_File_IO.read(filename=str(_target_file),
+                                                                 incoming_filename=current_file,
+                                                                 from_node='base'),
+                                       update_type=base_dict[_CONFIG_TYPE_KEY]))
+        return ConfigTree(_temp_dict, base_dict_list, extra_dict_list)
 
 def _CHECK_LIST(things):
     if not isinstance(things, list):
@@ -215,12 +281,11 @@ def _is_yaml_file(filename):
 def _read_from_yaml(filename):
     with open(filename, 'r') as f:
         dicts = yaml.safe_load(f)
-    if _EXTRA_CONFIG_KEY in dicts.keys():
-        extra_config = _CHECK_LIST(dicts[_EXTRA_CONFIG_KEY])
-        del dicts[_EXTRA_CONFIG_KEY]
-        return dicts, extra_config
-    else:
-        return dicts, []
+    extra_config = _CHECK_LIST(dicts[_EXTRA_CONFIG_KEY]) if _EXTRA_CONFIG_KEY in dicts.keys() else []
+    base_config = _CHECK_LIST(dicts[_BASE_CONFIG_KEY]) if _BASE_CONFIG_KEY in dicts.keys() else []
+    del dicts[_EXTRA_CONFIG_KEY]
+    del dicts[_BASE_CONFIG_KEY]
+    return dicts, extra_config, base_config
 
 # File IO for .py file
 def _is_py_file(filename):
@@ -230,13 +295,13 @@ def _read_from_py(filename):
     with open(filename, encoding='utf-8') as f:
         codes = ast.parse(f.read())
     codeobj = compile(codes, '', mode='exec')
-    # Support load global variable in nested function of the
-    # config.
     global_locals_var = dict()
     eval(codeobj, global_locals_var, global_locals_var)
     fin_dict = global_locals_var[_MAIN_CONFIG_KEY]
     extra_list = _CHECK_LIST(global_locals_var[_EXTRA_CONFIG_KEY])\
         if _EXTRA_CONFIG_KEY in global_locals_var.keys() else []
-    return fin_dict, extra_list
+    base_list = _CHECK_LIST(global_locals_var[_BASE_CONFIG_KEY]) \
+        if _BASE_CONFIG_KEY in global_locals_var.keys() else []
+    return fin_dict, extra_list, base_list
 
 
