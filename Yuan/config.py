@@ -1,3 +1,4 @@
+import os.path
 import warnings
 import yaml
 import ast
@@ -13,7 +14,8 @@ class DictConfig(dict):
     def __init__(self, *config_dicts):
         super().__init__()
         for config_dict in config_dicts:
-            assert isinstance(config_dict, dict), 'The input configs must be \'dict\' type.'
+            assert isinstance(config_dict, dict), ('The input configs must be \'dict\' type but received \'%s\''
+                                                   % type(config_dict))
             for key, val in config_dict.items():
                 self._check_builtin_keys(key)
                 self[key] = self._hook(val)
@@ -127,7 +129,7 @@ class Config(DictConfig):
         dict_list = list()
         for config in configs:
             if isinstance(config, str):
-                dict_list.append(self._file_to_dict(config))
+                dict_list.extend(self._file_to_dict(config))
             elif isinstance(config, dict):
                 dict_list.append(config)
             else:
@@ -146,21 +148,16 @@ class Config(DictConfig):
 
     def update_from_files(self, *files, strict=True):
         for file in files:
-            temp_dict = self._file_to_dict(file)
-            if strict:
-                self.update_strict(temp_dict)
-            else:
-                self.update(temp_dict)
+            temp_dict_list = self._file_to_dict(file)
+            for temp_dict in temp_dict_list:
+                if strict:
+                    self.update_strict(temp_dict)
+                else:
+                    self.update(temp_dict)
 
     @staticmethod
     def _file_to_dict(filename):
-        if _is_yaml_file(filename):
-            fin_dict = _read_from_yaml(filename)
-        elif _is_py_file(filename):
-            fin_dict = _read_from_py(filename)
-        else:
-            raise Exception('unknown type of config file, currently supported: yaml, py')
-        return fin_dict
+        return _Config_File_IO.read(filename)
 
     def find_key_value(self, key):
         """return all the node value which has the key name. If the node is a Config, return True"""
@@ -184,6 +181,33 @@ class Config(DictConfig):
             fin_key_dict[pre_key+'.'+k] = key_dict[k]
         return fin_key_dict
 
+
+class _Config_File_IO:
+    @classmethod
+    def read(cls, filename):
+        _read_func = None
+        if _is_yaml_file(filename):
+            _read_func = _read_from_yaml
+        elif _is_py_file(filename):
+            _read_func = _read_from_py
+        else:
+            raise Exception(f'Cannot load unknown type file "{filename}" to config')
+        _temp_dicts, config_files_list = _read_func(filename)
+        current_path = os.path.dirname(filename)
+        dict_list = [_temp_dicts]
+        for config_file in config_files_list:
+            dict_list.extend(cls.read(os.path.join(current_path, config_file)))
+        return dict_list
+
+
+_MAIN_CONFIG_KEY = 'config'
+_EXTRA_CONFIG_KEY = '_extra_'
+
+def _CHECK_LIST(things):
+    if not isinstance(things, list):
+        things = [things]
+    return things
+
 # File IO for yaml file
 def _is_yaml_file(filename):
     return filename.endswith(('.yml', '.yaml'))
@@ -191,7 +215,12 @@ def _is_yaml_file(filename):
 def _read_from_yaml(filename):
     with open(filename, 'r') as f:
         dicts = yaml.safe_load(f)
-    return dicts
+    if _EXTRA_CONFIG_KEY in dicts.keys():
+        extra_config = _CHECK_LIST(dicts[_EXTRA_CONFIG_KEY])
+        del dicts[_EXTRA_CONFIG_KEY]
+        return dicts, extra_config
+    else:
+        return dicts, []
 
 # File IO for .py file
 def _is_py_file(filename):
@@ -205,11 +234,9 @@ def _read_from_py(filename):
     # config.
     global_locals_var = dict()
     eval(codeobj, global_locals_var, global_locals_var)
-    global_locals_var = global_locals_var['config']
-    fin_dict = {
-        key: value
-        for key, value in global_locals_var.items()
-    }
-    return fin_dict
+    fin_dict = global_locals_var[_MAIN_CONFIG_KEY]
+    extra_list = _CHECK_LIST(global_locals_var[_EXTRA_CONFIG_KEY])\
+        if _EXTRA_CONFIG_KEY in global_locals_var.keys() else []
+    return fin_dict, extra_list
 
 
