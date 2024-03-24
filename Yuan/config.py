@@ -166,14 +166,9 @@ class Config(DictConfig):
             else:
                 raise Exception('updata type should be in [deault, compatiable, strict], received \'%s\'' % type)
 
-    # @staticmethod
-    # def _file_to_dict(filename):
-    #     return _Config_File_IO.read(filename)
-
     @staticmethod
     def _file_to_dict(filename):
-        config_tree = _Config_File_IO.read(filename)
-        return config_tree.generate()
+        return _Config_File_IO.read(filename)
 
     def find_key_value(self, key):
         """return all the node value which has the key name. If the node is a Config, return True"""
@@ -235,7 +230,11 @@ class ConfigTree:
 
 class _Config_File_IO:
     @classmethod
-    def read(cls, filename, incoming_filename: Path=None, from_node=None):
+    def read(cls, filename):
+        return cls._file2node(filename).generate()
+
+    @classmethod
+    def _file2node(cls, filename, incoming_filename: Path=None, from_node=None):
         _read_func = None
         if _is_yaml_file(filename):
             _read_func = _read_from_yaml
@@ -254,18 +253,18 @@ class _Config_File_IO:
             if from_node == 'base' and _target_file == incoming_filename:
                 warnings.warn(f'Cycle citation happened between {current_file} and {_target_file}')
                 continue
-            extra_dict_list.append(dict(node=_Config_File_IO.read(filename=str(_target_file),
-                                                                  incoming_filename=current_file,
-                                                                  from_node='extra'),
+            extra_dict_list.append(dict(node=_Config_File_IO._file2node(filename=str(_target_file),
+                                                                        incoming_filename=current_file,
+                                                                        from_node='extra'),
                                         update_type=extra_dict[_CONFIG_TYPE_KEY]))
         for base_dict in _base_files:
             _target_file = Path(os.path.join(current_dir, base_dict[_CONFIG_PATH_KEY])).resolve()
             if from_node == 'extra' and _target_file == incoming_filename:
                 warnings.warn(f'Cycle citation happened between {current_file} and {_target_file}')
                 continue
-            base_dict_list.append(dict(node=_Config_File_IO.read(filename=str(_target_file),
-                                                                 incoming_filename=current_file,
-                                                                 from_node='base'),
+            base_dict_list.append(dict(node=_Config_File_IO._file2node(filename=str(_target_file),
+                                                                       incoming_filename=current_file,
+                                                                       from_node='base'),
                                        update_type=base_dict[_CONFIG_TYPE_KEY]))
         return ConfigTree(_temp_dict, base_dict_list, extra_dict_list)
 
