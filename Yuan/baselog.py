@@ -32,6 +32,9 @@ class BasicLog(BaseLog):
     def _set_log_file(self):
         self.log_path = os.path.join(self.log_dir_path, self.name + '.log')
         fh = logging.FileHandler(self.log_path)
+        if any(isinstance(h, logging.FileHandler) and h.baseFilename == fh.baseFilename for h in
+                   self.logger.handlers):
+            return
 
         def _utc8_aera(timestamp):
             now = datetime.datetime.utcfromtimestamp(timestamp) + datetime.timedelta(hours=8)
@@ -51,3 +54,6 @@ class BasicLog(BaseLog):
 
     def error(self, *args, **kwargs):
         self.logger.error(*args, **kwargs)
+
+if __name__ == '__main__':
+    logger = BasicLog('test')
