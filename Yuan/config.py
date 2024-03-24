@@ -76,7 +76,7 @@ class DictConfig(dict):
         dicts_like.update(other_keys)
         for k, v in dicts_like.items():
             assert k in self.keys(), 'The update_strict() only allows to update the existing key-values, ' \
-                                     'add new keys is prohibited. key %s dose not exist.' % k
+                                     'add new keys is prohibited. key %s does not exist.' % k
             assert isinstance(v, DictConfig) == isinstance(self[k], DictConfig), \
                 'The update_strict() only allows to update the existing key-values, add or del new keys ' \
                 'are prohibited. key %s is a node/leaf, but change to leaf/node' % k
@@ -144,10 +144,13 @@ class Config(DictConfig):
         with open(filename + '.yaml', 'w') as f:
             print(str(self), file=f)
 
-    def update_from_files(self, *files):
+    def update_from_files(self, *files, strict=True):
         for file in files:
             temp_dict = self._file_to_dict(file)
-            self.update(temp_dict)
+            if strict:
+                self.update_strict(temp_dict)
+            else:
+                self.update(temp_dict)
 
     @staticmethod
     def _file_to_dict(filename):
@@ -181,7 +184,7 @@ class Config(DictConfig):
             fin_key_dict[pre_key+'.'+k] = key_dict[k]
         return fin_key_dict
 
-
+# File IO for yaml file
 def _is_yaml_file(filename):
     return filename.endswith(('.yml', '.yaml'))
 
@@ -190,6 +193,7 @@ def _read_from_yaml(filename):
         dicts = yaml.safe_load(f)
     return dicts
 
+# File IO for .py file
 def _is_py_file(filename):
     return filename.endswith('.py')
 
