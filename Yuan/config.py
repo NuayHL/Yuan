@@ -82,6 +82,16 @@ class DictConfig(dict):
             else:
                 self[k] = v
 
+    def _update(self, update_type='default', dicts_like=None, **other_keys):
+        if update_type == 'default':
+            self.update(dicts_like=dicts_like, **other_keys)
+        elif update_type == 'compatible':
+            self.update_compatible(dicts_like=dicts_like, **other_keys)
+        elif update_type == 'strict':
+            self.update_strict(dicts_like=dicts_like, **other_keys)
+        else:
+            raise NotImplementedError(f'Unsupported update type \'{update_type}\'')
+
     @staticmethod
     def _gather_dicts(dicts_like, **other_keys):
         if isinstance(dicts_like, dict):
@@ -211,21 +221,11 @@ class ConfigTree:
         for node in self._base:
             _type = node['update_type']
             _base_node = node['node'].generate()
-            if _type == 'default':
-                _base_node.update(fin_dict)
-            elif _type == 'compatible':
-                _base_node.update_compatible(fin_dict)
-            elif _type == 'strict':
-                _base_node.update_strict(fin_dict)
+            _base_node._update(_type, fin_dict)
             fin_dict = _base_node
         for node in self._extra:
             _type = node['update_type']
-            if _type == 'default':
-                fin_dict.update(node['node'].generate())
-            elif _type == 'compatible':
-                fin_dict.update_compatible(node['node'].generate())
-            elif _type == 'strict':
-                fin_dict.update_strict(node['node'].generate())
+            fin_dict._update(_type, node['node'].generate())
         return fin_dict
 
 class _Config_File_IO:
@@ -244,19 +244,11 @@ class _Config_File_IO:
             raise Exception(f'Cannot load unknown type file "{filename}" to config')
         _temp_dict, _extra_files, _base_files = _read_func(filename)
 
+        # remove the cycle citation and warning if have
         current_dir = os.path.dirname(filename)
         current_file = Path(filename).resolve()
         extra_dict_list = list()
         base_dict_list = list()
-        for extra_dict in _extra_files:
-            _target_file = Path(os.path.join(current_dir, extra_dict[_CONFIG_PATH_KEY])).resolve()
-            if from_node == 'base' and _target_file == incoming_filename:
-                warnings.warn(f'Cycle citation happened between {current_file} and {_target_file}')
-                continue
-            extra_dict_list.append(dict(node=_Config_File_IO._file2node(filename=str(_target_file),
-                                                                        incoming_filename=current_file,
-                                                                        from_node='extra'),
-                                        update_type=extra_dict[_CONFIG_TYPE_KEY]))
         for base_dict in _base_files:
             _target_file = Path(os.path.join(current_dir, base_dict[_CONFIG_PATH_KEY])).resolve()
             if from_node == 'extra' and _target_file == incoming_filename:
@@ -266,6 +258,15 @@ class _Config_File_IO:
                                                                        incoming_filename=current_file,
                                                                        from_node='base'),
                                        update_type=base_dict[_CONFIG_TYPE_KEY]))
+        for extra_dict in _extra_files:
+            _target_file = Path(os.path.join(current_dir, extra_dict[_CONFIG_PATH_KEY])).resolve()
+            if from_node == 'base' and _target_file == incoming_filename:
+                warnings.warn(f'Cycle citation happened between {current_file} and {_target_file}')
+                continue
+            extra_dict_list.append(dict(node=_Config_File_IO._file2node(filename=str(_target_file),
+                                                                        incoming_filename=current_file,
+                                                                        from_node='extra'),
+                                        update_type=extra_dict[_CONFIG_TYPE_KEY]))
         return ConfigTree(_temp_dict, base_dict_list, extra_dict_list)
 
 def _CHECK_LIST(things):
@@ -280,10 +281,16 @@ def _is_yaml_file(filename):
 def _read_from_yaml(filename):
     with open(filename, 'r') as f:
         dicts = yaml.safe_load(f)
-    extra_config = _CHECK_LIST(dicts[_EXTRA_CONFIG_KEY]) if _EXTRA_CONFIG_KEY in dicts.keys() else []
-    base_config = _CHECK_LIST(dicts[_BASE_CONFIG_KEY]) if _BASE_CONFIG_KEY in dicts.keys() else []
-    del dicts[_EXTRA_CONFIG_KEY]
-    del dicts[_BASE_CONFIG_KEY]
+    if _EXTRA_CONFIG_KEY in dicts.keys():
+        extra_config = _CHECK_LIST(dicts[_EXTRA_CONFIG_KEY])
+        del dicts[_EXTRA_CONFIG_KEY]
+    else:
+        extra_config = []
+    if _BASE_CONFIG_KEY in dicts.keys():
+        base_config = _CHECK_LIST(dicts[_BASE_CONFIG_KEY])
+        del dicts[_BASE_CONFIG_KEY]
+    else:
+        base_config = []
     return dicts, extra_config, base_config
 
 # File IO for .py file
