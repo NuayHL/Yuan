@@ -3,6 +3,7 @@ import warnings
 import yaml
 import ast
 from copy import deepcopy
+from pathlib import Path
 
 class ProhibitKeys:
     def __get__(self, instance, owner):
@@ -146,6 +147,8 @@ class Config(DictConfig):
     def __init__(self, *configs, **direct_keys):
         dict_list = list()
         for config in configs:
+            if isinstance(config, Path):
+                config = str(config)
             if isinstance(config, str):
                 dict_list.append(self._file_to_dict(config))
             elif isinstance(config, dict):
