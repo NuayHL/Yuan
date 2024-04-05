@@ -70,32 +70,20 @@ class Timer:
 
     @staticmethod
     def period2str(seconds):
-        fin = ''
-        if seconds > 3600:
-            hours = seconds//3600
-            fin += '%dh ' % hours
-            seconds %= 3600
-            mins = seconds // 60
-            fin += '%dm ' % mins
-        elif seconds > 60:
-            mins = seconds // 60
-            fin += '%dm ' % mins
-            seconds %= 60
-        fin += '%.fs' % seconds
-        return fin
+        hours = seconds // 3600  # 3600秒等于1小时
+        minutes = (seconds % 3600) // 60  # 计算剩余秒数后转换为分钟
+        seconds = seconds % 60
+        parts = []
+        if hours > 0:
+            parts.append(f"{hours}h")
+        if minutes > 0:
+            parts.append(f"{minutes}m")
+        parts.append(f"{seconds}s")  # 秒总是会有的
+        return " ".join(parts)
 
     @staticmethod
     def period2list(seconds):
-        fin = [0.0, 0.0, 0.0]
-        if seconds > 3600:
-            hours = seconds//3600
-            fin[0] = hours
-            seconds %= 3600
-            mins = seconds // 60
-            fin[1] = mins
-        elif seconds > 60:
-            mins = seconds // 60
-            fin[1] = mins
-            seconds %= 60
-        fin[2] = seconds
-        return fin
+        hours = seconds // 3600  # 3600秒等于1小时
+        minutes = (seconds % 3600) // 60  # 计算剩余秒数后转换为分钟
+        seconds = seconds % 60
+        return [hours, minutes, seconds]
