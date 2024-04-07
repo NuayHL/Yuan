@@ -70,20 +70,20 @@ class Timer:
 
     @staticmethod
     def period2str(seconds):
-        hours = seconds // 3600  # 3600秒等于1小时
-        minutes = (seconds % 3600) // 60  # 计算剩余秒数后转换为分钟
-        seconds = seconds % 60
+        hours = int(seconds // 3600)
+        minutes = int((seconds % 3600) // 60)
+        seconds = int(seconds % 60)
         parts = []
         if hours > 0:
             parts.append(f"{hours}h")
         if minutes > 0:
             parts.append(f"{minutes}m")
-        parts.append(f"{seconds}s")  # 秒总是会有的
+        parts.append(f"{seconds}s")
         return " ".join(parts)
 
     @staticmethod
     def period2list(seconds):
-        hours = seconds // 3600  # 3600秒等于1小时
-        minutes = (seconds % 3600) // 60  # 计算剩余秒数后转换为分钟
-        seconds = seconds % 60
+        hours = int(seconds // 3600)
+        minutes = int((seconds % 3600) // 60)
+        seconds = int(seconds % 60)
         return [hours, minutes, seconds]
