@@ -30,7 +30,8 @@ class Registry:
             if key is None:
                 key = value.__name__
             if key in self.keys():
-                warn('Already has module %s. Please consider change register name' % key)
+                warn('Already has module \'%s\' in \'%s\' registry.'
+                     ' Please consider change register name' % (key, self._name))
             self[key] = value
             return value
 
