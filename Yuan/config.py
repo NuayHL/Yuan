@@ -149,6 +149,7 @@ class Config(DictConfig):
         for config in configs:
             if isinstance(config, Path):
                 config = str(config)
+
             if isinstance(config, str):
                 dict_list.append(self._file_to_dict(config))
             elif isinstance(config, dict):
@@ -220,10 +221,14 @@ class ConfigTree:
         self._extra = extra_list
 
     def generate(self):
+        """First update to base then update from extra"""
         fin_dict = DictConfig(self._dict)
         for node in self._base:
             _type = node['update_type']
             _base_node = node['node'].generate()
+            """
+            Use base config as the update base
+            """
             _base_node._update(_type, fin_dict)
             fin_dict = _base_node
         for node in self._extra:
